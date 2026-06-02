@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MyVault | Secure File Manager</title>
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Identity Services -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    
+    <style>
+        /* --- CSS Variables & Theming --- */
+        :root {
+            --bg-color: #e2e8f0;
+            --glass-bg: rgba(255, 255, 255, 0.6);
+            --glass-border: rgba(255, 255, 255, 0.5);
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --primary: #4f46e5;
+            --primary-hover: #4338ca;
+            --danger: #ef4444;
+            --danger-hover: #dc2626;
+            --card-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+            --modal-overlay: rgba(0, 0, 0, 0.4);
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #0f172a;
+            --glass-bg: rgba(30, 41, 59, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --primary: #6366f1;
+            --primary-hover: #818cf8;
+            --card-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+            --modal-overlay: rgba(0, 0, 0, 0.7);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Ambient Background Blobs for Glassmorphism */
+        .blob {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(80px);
+            z-index: -1;
+            opacity: 0.6;
+        }
+        .blob-1 { top: -10%; left: -10%; width: 50vw; height: 50vw; background: #4f46e5; }
+        .blob-2 { bottom: -10%; right: -10%; width: 40vw; height: 40vw; background: #ec4899; }
+
+        /* --- Glassmorphism Utilities --- */
+        .glass {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            box-shadow: var(--card-shadow);
+        }
+
+        .glass-btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { background: var(--primary-hover); transform: translateY(-2px); }
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-danger:hover { background: var(--danger-hover); transform: translateY(-2px); }
+        .btn-icon { background: transparent; color: var(--text-main); padding: 8px; font-size: 1.2rem; }
+        .btn-icon:hover { background: rgba(128,128,128,0.2); }
+
+        /* --- Layout --- */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            margin-bottom: 30px;
+        }
+
+        .logo { font-size: 1.5rem; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+        
+        .header-controls { display: flex; align-items: center; gap: 15px; }
+
+        .search-bar {
+            padding: 10px 15px;
+            border-radius: 20px;
+            border: 1px solid var(--glass-border);
+            background: rgba(255,255,255,0.1);
+            color: var(--text-main);
+            outline: none;
+            width: 250px;
+        }
+
+        /* --- Main Content --- */
+        #app-view { display: none; }
+        
+        .upload-area {
+            border: 2px dashed var(--primary);
+            padding: 40px;
+            text-align: center;
+            margin-bottom: 30px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .upload-area:hover, .upload-area.dragover {
+            background: rgba(79, 70, 229, 0.1);
+        }
+        .upload-area i { font-size: 3rem; color: var(--primary); margin-bottom: 15px; }
+        
+        #file-input { display: none; }
+
+        /* Progress Bar */
+        .progress-container {
+            width: 100%;
+            height: 8px;
+            background: rgba(0,0,0,0.1);
+            border-radius: 4px;
+            margin-top: 15px;
+            display: none;
+            overflow: hidden;
+        }
+        .progress-bar {
+            height: 100%;
+            background: var(--primary);
+            width: 0%;
+            transition: width 0.2s ease;
+        }
+
+        /* --- Grid Layout --- */
+        .file-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 20px;
+        }
+
+        .file-card {
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .file-card:hover { transform: translateY(-5px); }
+        
+        .file-icon {
+            height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+            color: var(--primary);
+            background: rgba(0,0,0,0.05);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .file-icon img { width: 100%; height: 100%; object-fit: cover; }
+
+        .file-info h3 { font-size: 1rem; margin-bottom: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .file-info p { font-size: 0.8rem; color: var(--text-muted); }
+        
+        .file-actions {
+            display: flex;
+            justify-content: space-between;
+            margin-top: auto;
+            border-top: 1px solid var(--glass-border);
+            padding-top: 10px;
+        }
+
+        /* --- Modals & Toasts --- */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--modal-overlay);
+            display: none; align-items: center; justify-content: center;
+            z-index: 1000;
+        }
+        .modal {
+            width: 90%; max-width: 500px; padding: 25px;
+            display: flex; flex-direction: column; gap: 15px;
+        }
+        .modal h2 { margin-bottom: 10px; }
+        .modal input, .modal textarea {
+            width: 100%; padding: 10px; border-radius: 8px;
+            border: 1px solid var(--glass-border);
+            background: rgba(255,255,255,0.05);
+            color: var(--text-main); outline: none;
+        }
+        .modal-buttons { display: flex; justify-content: flex-end; gap: 10px; margin-top: 10px; }
+
+        .toast-container {
+            position: fixed; bottom: 20px; right: 20px;
+            display: flex; flex-direction: column; gap: 10px; z-index: 2000;
+        }
+        .toast {
+            padding: 12px 20px; border-radius: 8px; color: white;
+            animation: slideIn 0.3s ease forwards; opacity: 0;
+        }
+        .toast.success { background: #10b981; }
+        .toast.error { background: #ef4444; }
+        .toast.info { background: #3b82f6; }
+
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+        /* Screen toggles */
+        #login-view {
+            display: flex; flex-direction: column; align-items: center; justify-content: center; height: 80vh; text-align: center;
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            header { flex-direction: column; gap: 15px; }
+            .search-bar { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Background Design -->
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+
+    <div class="container">
+        <!-- Login View -->
+        <div id="login-view">
+            <div class="glass" style="padding: 50px; border-radius: 20px; max-width: 400px;">
+                <i class="fa-solid fa-vault" style="font-size: 4rem; color: var(--primary); margin-bottom: 20px;"></i>
+                <h1 style="margin-bottom: 10px;">MyVault</h1>
+                <p style="color: var(--text-muted); margin-bottom: 30px;">Your secure, serverless file manager powered by Google Drive.</p>
+                <button class="glass-btn btn-primary" onclick="handleAuthClick()" style="width: 100%; justify-content: center;">
+                    <i class="fa-brands fa-google"></i> Login with Google
+                </button>
+            </div>
+        </div>
+
+        <!-- Main App View -->
+        <div id="app-view">
+            <header class="glass">
+                <div class="logo">
+                    <i class="fa-solid fa-vault" style="color: var(--primary);"></i> MyVault
+                </div>
+                <div class="header-controls">
+                    <input type="text" class="search-bar" id="search-input" placeholder="Search files or tags...">
+                    <button class="glass-btn btn-icon" onclick="toggleTheme()" title="Toggle Theme">
+                        <i class="fa-solid fa-moon" id="theme-icon"></i>
+                    </button>
+                    <button class="glass-btn btn-danger" onclick="handleSignoutClick()" title="Logout">
+                        <i class="fa-solid fa-sign-out-alt"></i>
+                    </button>
+                </div>
+            </header>
+
+            <div class="upload-area glass" id="drop-zone" onclick="document.getElementById('file-input').click()">
+                <i class="fa-solid fa-cloud-arrow-up"></i>
+                <h2>Drag & Drop files here</h2>
+                <p>or click to browse (PDF, Images, Docs, ZIPs)</p>
+                <input type="file" id="file-input" accept=".pdf, image/*, .doc, .docx, .zip" multiple>
+                
+                <div class="progress-container" id="progress-container">
+                    <div class="progress-bar" id="progress-bar"></div>
+                </div>
+                <p id="progress-text" style="margin-top: 10px; font-size: 0.9rem; color: var(--primary); display: none;">Uploading...</p>
+            </div>
+
+            <h2 style="margin-bottom: 20px;">Your Files</h2>
+            <div class="file-grid" id="file-grid">
+                <!-- File cards will be injected here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Metadata Modal -->
+    <div class="modal-overlay" id="metadata-modal">
+        <div class="glass modal">
+            <h2 id="modal-title">File Details</h2>
+            
+            <label>Tags (comma separated)</label>
+            <input type="text" id="modal-tags" placeholder="e.g. work, important, receipts">
+            
+            <label>Notes</label>
+            <textarea id="modal-notes" rows="4" placeholder="Add some notes about this file..."></textarea>
+            
+            <p style="font-size: 0.8rem; color: var(--text-muted);">Uploaded: <span id="modal-date"></span></p>
+
+            <div class="modal-buttons">
+                <button class="glass-btn btn-icon" onclick="closeModal()">Cancel</button>
+                <button class="glass-btn btn-primary" onclick="saveMetadata()">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <script>
+        // ==========================================
+        //             CONFIGURATION
+        // ==========================================
+        // Paste your actual Google OAuth Client ID between the single quotes below.
+        // Example: '1234567890-abcdefg.apps.googleusercontent.com'
+        const CLIENT_ID = 'YOUR_CLIENT_ID_HERE.apps.googleusercontent.com'; 
+        
+        // ==========================================
+        
+        const SCOPES = 'https://www.googleapis.com/auth/drive.file';
+        let tokenClient;
+        let accessToken = null;
+        let vaultFolderId = null;
+        let currentFiles = [];
+        let activeFileIdForMetadata = null;
+
+        // --- Initialization ---
+        window.onload = () => {
+            initTheme();
+            initTokenClient();
+            setupEventListeners();
+        };
+
+        function initTokenClient() {
+            if (typeof google !== 'undefined') {
+                // Ensure client ID is provided
+                if (CLIENT_ID === 'YOUR_CLIENT_ID_HERE.apps.googleusercontent.com' || !CLIENT_ID) {
+                    showToast('Action Required: Please edit index.html and set your Google Client ID!', 'error');
+                    return;
+                }
+
+                tokenClient = google.accounts.oauth2.initTokenClient({
+                    client_id: CLIENT_ID,
+                    scope: SCOPES,
+                    callback: async (tokenResponse) => {
+                        if (tokenResponse && tokenResponse.access_token) {
+                            accessToken = tokenResponse.access_token;
+                            showToast('Login successful!', 'success');
+                            document.getElementById('login-view').style.display = 'none';
+                            document.getElementById('app-view').style.display = 'block';
+                            await initializeDrive();
+                        }
+                    },
+                });
+            } else {
+                setTimeout(initTokenClient, 500); // Retry if library isn't loaded yet
+            }
+        }
+
+        // --- Authentication ---
+        function handleAuthClick() {
+            if (CLIENT_ID === 'YOUR_CLIENT_ID_HERE.apps.googleusercontent.com' || !CLIENT_ID) {
+                showToast('Setup error: You must add your Client ID in index.html first.', 'error');
+                return;
+            }
+
+            if (tokenClient) {
+                tokenClient.requestAccessToken();
+            } else {
+                showToast('Google Identity library is still loading. Please try again in a moment.', 'error');
+            }
+        }
+
+        function handleSignoutClick() {
+            if (accessToken) {
+                google.accounts.oauth2.revoke(accessToken, () => {
+                    accessToken = null;
+                    document.getElementById('app-view').style.display = 'none';
+                    document.getElementById('login-view').style.display = 'flex';
+                    document.getElementById('file-grid').innerHTML = '';
+                    showToast('Logged out successfully.', 'info');
+                });
+            }
+        }
+
+        // --- Google Drive API Operations ---
+        async function initializeDrive() {
+            try {
+                showToast('Checking Vault...', 'info');
+                await getOrCreateFolder();
+                await fetchFiles();
+            } catch (error) {
+                console.error(error);
+                showToast('Error initializing Drive access.', 'error');
+            }
+        }
+
+        async function getOrCreateFolder() {
+            // Search for folder
+            const query = encodeURIComponent(`mimeType='application/vnd.google-apps.folder' and name='MyVault' and trashed=false`);
+            const url = `https://www.googleapis.com/drive/v3/files?q=${query}&fields=files(id, name)`;
+            
+            const response = await fetch(url, {
+                headers: { 'Authorization': `Bearer ${accessToken}` }
+            });
+            const data = await response.json();
+
+            if (data.files && data.files.length > 0) {
+                vaultFolderId = data.files[0].id;
+            } else {
+                // Create folder
+                const createUrl = 'https://www.googleapis.com/drive/v3/files';
+                const metadata = {
+                    name: 'MyVault',
+                    mimeType: 'application/vnd.google-apps.folder'
+                };
+                const createResponse = await fetch(createUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(metadata)
+                });
+                const createData = await createResponse.json();
+                vaultFolderId = createData.id;
+                showToast('Created MyVault folder in your Drive.', 'success');
+            }
+        }
+
+        async function fetchFiles() {
+            if (!vaultFolderId) return;
+
+            const query = encodeURIComponent(`'${vaultFolderId}' in parents and trashed=false`);
+            const url = `https://www.googleapis.com/drive/v3/files?q=${query}&fields=files(id, name, mimeType, webContentLink, webViewLink, thumbnailLink, createdTime)&orderBy=createdTime desc`;
+            
+            try {
+                const response = await fetch(url, {
+                    headers: { 'Authorization': `Bearer ${accessToken}` }
+                });
+                const data = await response.json();
+                currentFiles = data.files || [];
+                renderFiles(currentFiles);
+            } catch (error) {
+                console.error("Error fetching files:", error);
+                showToast('Failed to load files.', 'error');
+            }
+        }
+
+        // --- File Upload Logic (Resumable Upload for Progress) ---
+        async function handleFiles(files) {
+            if (!files || files.length === 0) return;
+            
+            // Allow PDF, Images, Word docs, Zips
+            const allowedTypes = ['application/pdf', 'application/zip', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+            
+            for (let file of files) {
+                if (!file.type.startsWith('image/') && !allowedTypes.includes(file.type) && !file.name.endsWith('.zip')) {
+                    showToast(`${file.name} is not a supported file type.`, 'error');
+                    continue;
+                }
+                await uploadFile(file);
+            }
+        }
+
+        async function uploadFile(file) {
+            const progressContainer = document.getElementById('progress-container');
+            const progressBar = document.getElementById('progress-bar');
+            const progressText = document.getElementById('progress-text');
+            
+            progressContainer.style.display = 'block';
+            progressText.style.display = 'block';
+            progressText.innerText = `Preparing ${file.name}...`;
+            progressBar.style.width = '0%';
+
+            try {
+                // 1. Initiate Resumable Upload
+                const metadata = {
+                    name: file.name,
+                    parents: [vaultFolderId]
+                };
+                
+                const initRes = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(metadata)
+                });
+
+                if (!initRes.ok) throw new Error('Failed to initiate upload');
+                
+                const locationUrl = initRes.headers.get('Location');
+                if (!locationUrl) throw new Error('No upload location received');
+
+                // 2. Upload via XMLHttpRequest to track progress
+                return new Promise((resolve, reject) => {
+                    const xhr = new XMLHttpRequest();
+                    xhr.open('PUT', locationUrl, true);
+                    
+                    xhr.upload.onprogress = (e) => {
+                        if (e.lengthComputable) {
+                            const percent = Math.round((e.loaded / e.total) * 100);
+                            progressBar.style.width = `${percent}%`;
+                            progressText.innerText = `Uploading ${file.name}: ${percent}%`;
+                        }
+                    };
+
+                    xhr.onload = async () => {
+                        if (xhr.status >= 200 && xhr.status < 300) {
+                            showToast(`${file.name} uploaded!`, 'success');
+                            // Save initial metadata locally
+                            const respObj = JSON.parse(xhr.responseText);
+                            initLocalMetadata(respObj.id);
+                            
+                            await fetchFiles(); // Refresh
+                            resolve();
+                        } else {
+                            reject('Upload failed');
+                        }
+                        progressContainer.style.display = 'none';
+                        progressText.style.display = 'none';
+                    };
+
+                    xhr.onerror = () => {
+                        reject('XHR Network Error');
+                        progressContainer.style.display = 'none';
+                        progressText.style.display = 'none';
+                    };
+
+                    xhr.send(file);
+                });
+
+            } catch (error) {
+                console.error("Upload error:", error);
+                showToast(`Failed to upload ${file.name}`, 'error');
+                progressContainer.style.display = 'none';
+                progressText.style.display = 'none';
+            }
+        }
+
+        async function deleteFile(fileId) {
+            try {
+                const response = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${accessToken}` }
+                });
+                
+                if (response.ok || response.status === 204) {
+                    showToast('File deleted', 'success');
+                    removeLocalMetadata(fileId);
+                    await fetchFiles();
+                } else {
+                    throw new Error('Delete failed');
+                }
+            } catch (error) {
+                console.error(error);
+                showToast('Failed to delete file', 'error');
+            }
+        }
+
+        // --- UI Rendering ---
+        function getIconForMime(mimeType, url) {
+            if (mimeType.startsWith('image/')) {
+                return url ? `<img src="${url}" alt="thumbnail">` : '<i class="fa-solid fa-image"></i>';
+            }
+            if (mimeType === 'application/pdf') return '<i class="fa-solid fa-file-pdf"></i>';
+            if (mimeType.includes('zip')) return '<i class="fa-solid fa-file-zipper"></i>';
+            if (mimeType.includes('word')) return '<i class="fa-solid fa-file-word"></i>';
+            return '<i class="fa-solid fa-file"></i>';
+        }
+
+        function renderFiles(files) {
+            const grid = document.getElementById('file-grid');
+            grid.innerHTML = '';
+            
+            if (files.length === 0) {
+                grid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: var(--text-muted);">No files found in MyVault.</p>';
+                return;
+            }
+
+            files.forEach(file => {
+                const meta = getLocalMetadata(file.id);
+                const card = document.createElement('div');
+                card.className = 'glass file-card';
+                
+                const iconHtml = getIconForMime(file.mimeType, file.thumbnailLink);
+                
+                card.innerHTML = `
+                    <div class="file-icon" onclick="window.open('${file.webViewLink}', '_blank')">${iconHtml}</div>
+                    <div class="file-info" onclick="openMetadataModal('${file.id}', '${file.name.replace(/'/g, "\\'")}', '${file.createdTime}')">
+                        <h3 title="${file.name}">${file.name}</h3>
+                        <p>${new Date(file.createdTime).toLocaleDateString()} | ${meta.tags.length ? meta.tags.join(', ') : 'No tags'}</p>
+                    </div>
+                    <div class="file-actions">
+                        <button class="glass-btn btn-icon" onclick="window.open('${file.webContentLink || file.webViewLink}', '_blank')" title="Download">
+                            <i class="fa-solid fa-download"></i>
+                        </button>
+                        <button class="glass-btn btn-icon" style="color: var(--danger);" onclick="deleteFile('${file.id}')" title="Delete">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // --- LocalStorage Metadata ---
+        function getLocalMetadata(fileId) {
+            const raw = localStorage.getItem('myvault_metadata');
+            const data = raw ? JSON.parse(raw) : {};
+            return data[fileId] || { tags: [], notes: '', uploadDate: new Date().toISOString() };
+        }
+
+        function initLocalMetadata(fileId) {
+            const raw = localStorage.getItem('myvault_metadata');
+            const data = raw ? JSON.parse(raw) : {};
+            if(!data[fileId]){
+                data[fileId] = { tags: [], notes: '', uploadDate: new Date().toISOString() };
+                localStorage.setItem('myvault_metadata', JSON.stringify(data));
+            }
+        }
+
+        function removeLocalMetadata(fileId) {
+            const raw = localStorage.getItem('myvault_metadata');
+            if(raw){
+                const data = JSON.parse(raw);
+                delete data[fileId];
+                localStorage.setItem('myvault_metadata', JSON.stringify(data));
+            }
+        }
+
+        function saveMetadata() {
+            if (!activeFileIdForMetadata) return;
+            
+            const tagsInput = document.getElementById('modal-tags').value;
+            const notesInput = document.getElementById('modal-notes').value;
+            
+            const tags = tagsInput.split(',').map(t => t.trim()).filter(t => t);
+            
+            const raw = localStorage.getItem('myvault_metadata');
+            const data = raw ? JSON.parse(raw) : {};
+            
+            data[activeFileIdForMetadata] = {
+                ...data[activeFileIdForMetadata],
+                tags: tags,
+                notes: notesInput
+            };
+            
+            localStorage.setItem('myvault_metadata', JSON.stringify(data));
+            closeModal();
+            showToast('Metadata saved!', 'success');
+            renderFiles(currentFiles); // re-render to show updated tags
+        }
+
+        // --- Modals & UI Interactions ---
+        function openMetadataModal(fileId, fileName, date) {
+            activeFileIdForMetadata = fileId;
+            const meta = getLocalMetadata(fileId);
+            
+            document.getElementById('modal-title').innerText = fileName;
+            document.getElementById('modal-tags').value = meta.tags.join(', ');
+            document.getElementById('modal-notes').value = meta.notes || '';
+            document.getElementById('modal-date').innerText = new Date(date || meta.uploadDate).toLocaleString();
+            
+            document.getElementById('metadata-modal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('metadata-modal').style.display = 'none';
+            activeFileIdForMetadata = null;
+        }
+
+        // Search Filter
+        document.getElementById('search-input').addEventListener('input', (e) => {
+            const term = e.target.value.toLowerCase();
+            const filtered = currentFiles.filter(file => {
+                const meta = getLocalMetadata(file.id);
+                const tagMatch = meta.tags.some(tag => tag.toLowerCase().includes(term));
+                const nameMatch = file.name.toLowerCase().includes(term);
+                return tagMatch || nameMatch;
+            });
+            renderFiles(filtered);
+        });
+
+        // --- Drag and Drop ---
+        function setupEventListeners() {
+            const dropZone = document.getElementById('drop-zone');
+            const fileInput = document.getElementById('file-input');
+
+            dropZone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dropZone.classList.add('dragover');
+            });
+
+            dropZone.addEventListener('dragleave', (e) => {
+                e.preventDefault();
+                dropZone.classList.remove('dragover');
+            });
+
+            dropZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropZone.classList.remove('dragover');
+                handleFiles(e.dataTransfer.files);
+            });
+
+            fileInput.addEventListener('change', (e) => {
+                handleFiles(e.target.files);
+                fileInput.value = ''; // reset
+            });
+        }
+
+        // --- Theming ---
+        function initTheme() {
+            const savedTheme = localStorage.getItem('myvault_theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            updateThemeIcon(savedTheme);
+        }
+
+        function toggleTheme() {
+            const current = document.documentElement.getAttribute('data-theme');
+            const next = current === 'light' ? 'dark' : 'light';
+            document.documentElement.setAttribute('data-theme', next);
+            localStorage.setItem('myvault_theme', next);
+            updateThemeIcon(next);
+        }
+
+        // --- Toast System ---
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `glass toast ${type}`;
+            toast.innerText = message;
+            
+            container.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateX(100%)';
+                toast.style.transition = 'all 0.3s ease';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        function updateThemeIcon(theme) {
+            const icon = document.getElementById('theme-icon');
+            if (theme === 'dark') {
+                icon.className = 'fa-solid fa-sun';
+            } else {
+                icon.className = 'fa-solid fa-moon';
+            }
+        }
+    </script>
+</body>
+</html>
