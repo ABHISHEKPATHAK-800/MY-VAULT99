@@ -3,7 +3,7 @@ const ASSETS_TO_CACHE = [
   './',
   './index.html',
   './manifest.json',
-  './Gemini_Generated_Image_vuk0bvuk0bvuk0bv.jpg'
+  './logo.jpg'
 ];
 
 // Installs and caches app assets for fast loading
