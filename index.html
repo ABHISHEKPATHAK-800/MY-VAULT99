@@ -124,6 +124,20 @@
             background: rgba(11, 12, 16, 0.85);
             backdrop-filter: blur(8px);
         }
+
+        /* Multi-select and Bulk Action Bar Styles */
+        .file-card-selected {
+            border-color: #8b5cf6 !important;
+            background-color: rgba(139, 92, 246, 0.08) !important;
+            box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.3);
+        }
+        .bulk-action-bar {
+            transform: translate(-50%, 100px);
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .bulk-action-bar.active {
+            transform: translate(-50%, 0);
+        }
     </style>
 </head>
 <body class="bg-dark-bg text-zinc-100 transition-colors duration-200 overflow-hidden min-h-screen">
@@ -291,9 +305,17 @@
                             <button onclick="navigateTo('root')" class="hover:text-brand-500 transition-colors">MyVault</button>
                             <i class="fa-solid fa-chevron-right text-[10px] mx-2.5 opacity-60"></i>
                             <span id="breadcrumb-current" class="text-white font-extrabold">Dashboard</span>
+                            <!-- Dynamic Audio Launcher container -->
+                            <div id="audio-playlist-trigger-container" class="hidden ml-4">
+                                <button onclick="launchAudioPlaylistWidget()" class="px-3 py-1 bg-brand-600 hover:bg-brand-500 text-white rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 shadow-md shadow-brand-500/20"><i class="fa-solid fa-play"></i> Play Playlist</button>
+                            </div>
                         </div>
                         
-                        <div class="flex gap-2">
+                        <div class="flex gap-2 items-center">
+                            <button onclick="toggleSelectMode()" id="select-mode-btn" class="px-3 py-1.5 rounded-lg hover:bg-zinc-800 text-zinc-400 text-xs font-semibold transition-all flex items-center gap-1.5">
+                                <i class="fa-solid fa-square-check"></i> Select Mode
+                            </button>
+                            <span class="h-4 w-px bg-zinc-800 mx-1"></span>
                             <button onclick="setGlobalView('grid')" id="view-grid-btn" class="px-3 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-white text-xs font-semibold transition-all">Grid</button>
                             <button onclick="setGlobalView('list')" id="view-list-btn" class="px-3 py-1.5 rounded-lg hover:bg-zinc-800 text-zinc-400 text-xs font-semibold transition-all">List</button>
                         </div>
@@ -436,16 +458,6 @@
                                     <p class="text-[10px] text-emerald-500 font-extrabold flex items-center gap-1"><span class="h-1.5 w-1.5 rounded-full bg-emerald-500 inline-block animate-pulse"></span> Cloud Sandbox Sync Active</p>
                                 </div>
                             </div>
-                            
-                            <!-- CALL CONTROL PANEL (NEW INTEGRATION) -->
-                            <div class="flex items-center gap-1.5" id="chat-header-actions" style="display: none;">
-                                <button onclick="initiateCall('audio')" class="p-2.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-emerald-400 rounded-xl transition-all" title="Secure Audio Call">
-                                    <i class="fa-solid fa-phone text-sm"></i>
-                                </button>
-                                <button onclick="initiateCall('video')" class="p-2.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-brand-400 rounded-xl transition-all" title="Secure Video Call">
-                                    <i class="fa-solid fa-video text-sm"></i>
-                                </button>
-                            </div>
                         </div>
 
                         <!-- Chat Messages Screen Scroll area -->
@@ -489,95 +501,6 @@
         </main>
     </div>
 
-    <!-- P2P SECURE CALLING ENGINE INTERFACE OVERLAYS -->
-    <!-- Full-Screen Interactive Calling Viewport -->
-    <div id="call-overlay" class="hidden fixed inset-0 z-[15000] bg-dark-bg/95 backdrop-blur-xl flex flex-col justify-between p-6 animate-fade-in text-white">
-        <!-- Overlay Header Status -->
-        <div class="flex items-center justify-between">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-full bg-brand-500/10 text-brand-400 flex items-center justify-center font-bold text-sm" id="call-partner-avatar">?</div>
-                <div>
-                    <h4 class="font-extrabold text-sm" id="call-partner-name">Establishing Sync...</h4>
-                    <p class="text-[10px] text-zinc-500 font-semibold" id="call-status-label">Establishing secure P2P feed...</p>
-                </div>
-            </div>
-            <!-- Call Parameter Indicator -->
-            <span class="text-xs bg-brand-900/40 text-brand-400 px-3 py-1.5 rounded-full font-bold uppercase tracking-widest" id="call-type-badge">Call Feed</span>
-        </div>
-
-        <!-- Video Frame and Profile Space -->
-        <div class="flex-grow flex items-center justify-center my-6 relative overflow-hidden rounded-3xl bg-zinc-950 border border-dark-border">
-            
-            <!-- Real Remote Video Element -->
-            <video id="remote-video" class="w-full h-full object-cover hidden" autoplay playsinline></video>
-            
-            <!-- Default Avatar & Soundwave Placeholder -->
-            <div id="remote-placeholder" class="flex flex-col items-center gap-4 text-center z-10">
-                <div class="w-24 h-24 rounded-full bg-brand-600/20 text-brand-400 flex items-center justify-center text-4xl font-extrabold animate-pulse border border-brand-500/30" id="remote-placeholder-avatar">
-                    ?
-                </div>
-                <div>
-                    <h3 class="text-lg font-extrabold" id="remote-placeholder-name">Securing Link</h3>
-                    <p class="text-xs text-zinc-500 mt-1" id="remote-placeholder-status">Negotiating End-to-End Keys</p>
-                </div>
-                
-                <!-- Bouncing Live Wave Visualizer -->
-                <div class="flex items-center gap-1.5 h-8 mt-2" id="voice-waves">
-                    <span class="w-1 bg-brand-500 rounded-full h-2 transition-all duration-150"></span>
-                    <span class="w-1 bg-brand-500 rounded-full h-4 transition-all duration-150"></span>
-                    <span class="w-1 bg-brand-500 rounded-full h-6 transition-all duration-150"></span>
-                    <span class="w-1 bg-brand-500 rounded-full h-3 transition-all duration-150"></span>
-                    <span class="w-1 bg-brand-500 rounded-full h-1 transition-all duration-150"></span>
-                </div>
-            </div>
-
-            <!-- Floating Draggable Local Video Feed -->
-            <div id="local-video-container" class="absolute bottom-4 right-4 w-32 h-44 rounded-2xl bg-zinc-900 border border-white/10 overflow-hidden shadow-2xl transition-all z-20">
-                <video id="local-video" class="w-full h-full object-cover" autoplay muted playsinline></video>
-                <div id="local-placeholder" class="hidden w-full h-full bg-zinc-800 flex items-center justify-center text-sm font-bold text-zinc-500">
-                    Camera Off
-                </div>
-            </div>
-        </div>
-
-        <!-- In-Call Device Control Deck -->
-        <div class="flex items-center justify-center gap-4 py-4">
-            <button onclick="toggleCallMute()" id="call-mute-btn" class="p-4 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-full transition-all text-xl" title="Mute Mic">
-                <i class="fa-solid fa-microphone" id="call-mute-icon"></i>
-            </button>
-            <button onclick="toggleCallCamera()" id="call-cam-btn" class="p-4 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-full transition-all text-xl" title="Disable Camera">
-                <i class="fa-solid fa-video" id="call-cam-icon"></i>
-            </button>
-            <button onclick="hangUpCall()" class="p-4 bg-rose-600 hover:bg-rose-500 text-white rounded-full transition-all text-xl shadow-lg shadow-rose-600/30" title="Disconnect Session">
-                <i class="fa-solid fa-phone-slash"></i>
-            </button>
-        </div>
-    </div>
-
-    <!-- Live Incoming Call Banner Notifications -->
-    <div id="incoming-call-modal" class="hidden fixed top-6 left-1/2 -translate-x-1/2 z-[16000] w-full max-w-sm p-4 glass rounded-3xl shadow-2xl border border-brand-500/50 flex items-center justify-between animate-slide-up text-white">
-        <div class="flex items-center gap-3 min-w-0">
-            <div class="w-11 h-11 bg-brand-500/10 text-brand-400 rounded-2xl flex items-center justify-center font-bold text-base flex-shrink-0 animate-bounce" id="incoming-avatar">
-                ?
-            </div>
-            <div class="min-w-0 flex-1">
-                <h4 class="font-extrabold text-sm text-white truncate" id="incoming-caller-name">User...</h4>
-                <p class="text-[10px] text-zinc-400 font-bold flex items-center gap-1">
-                    <i class="fa-solid fa-video text-brand-500 animate-pulse"></i>
-                    Incoming calling session...
-                </p>
-            </div>
-        </div>
-        <div class="flex items-center gap-2">
-            <button onclick="declineCall()" class="w-9 h-9 bg-rose-600 hover:bg-rose-500 text-white rounded-xl flex items-center justify-center transition-all shadow-md shadow-rose-600/20" title="Decline">
-                <i class="fa-solid fa-phone-slash text-xs"></i>
-            </button>
-            <button onclick="acceptCall()" class="w-9 h-9 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl flex items-center justify-center transition-all shadow-md shadow-emerald-600/20" title="Accept Secure Call">
-                <i class="fa-solid fa-phone text-xs"></i>
-            </button>
-        </div>
-    </div>
-
     <!-- Modal for picking Vault Asset to Share in Chat -->
     <div id="vault-share-modal" class="hidden fixed inset-0 z-[12000] flex items-center justify-center bg-dark-bg/60 backdrop-blur-sm animate-fade-in">
         <div class="glass max-w-md w-full rounded-3xl p-6 border border-white/5 max-h-[70vh] flex flex-col">
@@ -619,6 +542,8 @@
                 </div>
             </div>
             <div class="flex items-center gap-2">
+                <!-- Appended Text Editor trigger -->
+                <button id="lightbox-edit-btn" class="hidden p-2.5 hover:bg-zinc-800 rounded-xl transition-all" title="Edit File"><i class="fa-solid fa-pen-to-square text-lg text-zinc-300"></i></button>
                 <button id="lightbox-download-btn" class="p-2.5 hover:bg-zinc-800 rounded-xl transition-all" title="Download Resource"><i class="fa-solid fa-download text-lg text-zinc-300"></i></button>
                 <button id="lightbox-details-btn" class="p-2.5 hover:bg-zinc-800 rounded-xl transition-all" title="Properties"><i class="fa-solid fa-circle-info text-lg text-zinc-300"></i></button>
                 <button onclick="closeLightbox()" class="p-2.5 hover:bg-zinc-800 rounded-xl transition-all" title="Close"><i class="fa-solid fa-xmark text-xl text-zinc-300"></i></button>
@@ -750,6 +675,66 @@
         </div>
     </div>
 
+    <!-- Bulk Action Floating Bar -->
+    <div id="bulk-action-bar" class="bulk-action-bar fixed bottom-6 left-1/2 glass px-6 py-4 rounded-3xl shadow-2xl border border-brand-500/20 z-[1000] hidden items-center gap-6 animate-fade-in">
+        <div class="text-xs font-bold text-white"><span id="bulk-select-count" class="text-brand-400">0</span> items selected</div>
+        <div class="h-4 w-px bg-zinc-800"></div>
+        <div class="flex items-center gap-2">
+            <button onclick="openBulkMoveModal()" class="px-3.5 py-2 bg-brand-600 hover:bg-brand-500 text-white text-xs font-bold rounded-xl transition-all flex items-center gap-1.5 shadow-md shadow-brand-500/20">
+                <i class="fa-solid fa-folder-open"></i> Bulk Move
+            </button>
+            <button onclick="triggerBulkStar()" class="px-3.5 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-xs font-bold rounded-xl transition-all flex items-center gap-1.5">
+                <i class="fa-solid fa-star text-amber-400"></i> Star
+            </button>
+            <button onclick="triggerBulkDelete()" class="px-3.5 py-2 bg-rose-950/40 hover:bg-rose-900 text-rose-400 text-xs font-bold rounded-xl transition-all flex items-center gap-1.5">
+                <i class="fa-solid fa-trash-can"></i> Delete
+            </button>
+        </div>
+        <button onclick="clearBulkSelection()" class="p-2 text-zinc-400 hover:text-white transition-colors"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+
+    <!-- Bulk Move Folder Picker Modal -->
+    <div id="bulk-move-modal" class="hidden fixed inset-0 z-[12500] flex items-center justify-center bg-dark-bg/60 backdrop-blur-sm animate-fade-in">
+        <div class="glass max-w-sm w-full rounded-2xl p-6 border border-white/5">
+            <h3 class="text-sm font-extrabold text-white mb-4 flex items-center gap-2"><i class="fa-solid fa-folder-tree text-brand-500"></i> Move selected items to:</h3>
+            <div id="bulk-move-folder-list" class="space-y-1.5 max-h-48 overflow-y-auto scrollbar-thin pr-1">
+                <!-- Loaded dynamically -->
+            </div>
+            <div class="flex justify-end gap-3 mt-4 pt-3 border-t border-dark-border">
+                <button onclick="closeBulkMoveModal()" class="px-4 py-2 text-xs font-bold text-zinc-400 hover:bg-zinc-800 rounded-xl">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Persistent Floating Audio Playlist Widget -->
+    <div id="audio-playlist-widget" class="audio-widget fixed glass p-4 rounded-3xl border border-brand-500/20 shadow-2xl w-80 hidden flex-col gap-3 animate-slide-up transition-all">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2.5 min-w-0">
+                <div class="w-8 h-8 rounded-xl bg-brand-500/10 text-brand-400 flex items-center justify-center animate-pulse"><i class="fa-solid fa-compact-disc text-base"></i></div>
+                <div class="min-w-0">
+                    <h4 id="widget-track-title" class="text-xs font-bold text-white truncate">No track loaded</h4>
+                    <p class="text-[9px] text-zinc-500 font-semibold uppercase tracking-wider">MyVault Radio</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-1">
+                <button onclick="toggleAudioWidgetCollapse()" class="p-1.5 hover:bg-zinc-800 rounded-lg text-zinc-400"><i class="fa-solid fa-chevron-down text-[10px]" id="widget-collapse-icon"></i></button>
+                <button onclick="closeAudioWidget()" class="p-1.5 hover:bg-zinc-800 rounded-lg text-zinc-400"><i class="fa-solid fa-xmark text-xs"></i></button>
+            </div>
+        </div>
+        <div id="widget-player-body" class="flex flex-col gap-3">
+            <audio id="widget-audio-element" class="w-full h-8 text-xs bg-transparent" controls></audio>
+            <div class="flex items-center justify-between gap-2 border-t border-dark-border/40 pt-2 text-[10px]">
+                <button onclick="prevWidgetTrack()" class="p-1 hover:text-brand-400 text-zinc-400 font-semibold flex items-center gap-1"><i class="fa-solid fa-backward-step"></i> Prev</button>
+                <button onclick="togglePlayPauseWidget()" class="px-3 py-1 bg-brand-600 hover:bg-brand-500 text-white font-bold rounded-lg"><span id="widget-play-text">Play</span></button>
+                <button onclick="nextWidgetTrack()" class="p-1 hover:text-brand-400 text-zinc-400 font-semibold flex items-center gap-1">Next <i class="fa-solid fa-forward-step"></i></button>
+            </div>
+            <!-- Playlist Queue -->
+            <div class="max-h-24 overflow-y-auto scrollbar-thin border-t border-dark-border/40 pt-2 space-y-1.5" id="widget-queue-list">
+                <!-- Loaded dynamically -->
+            </div>
+        </div>
+    </div>
+
     <!-- Toast Notifications container -->
     <div id="toast-container" class="fixed bottom-6 right-6 z-[13000] flex flex-col gap-2.5 max-w-sm w-full pointer-events-none"></div>
 
@@ -790,28 +775,6 @@
         let unsubscribeChatListener = null;
         
         let chatBlobCacheMap = {};
-
-        // Call State Variables
-        let activeCallListener = null;
-        let peerConnection = null;
-        let localStream = null;
-        let remoteStream = null;
-        let currentCallData = null;
-        let isAudioMuted = false;
-        let isVideoMuted = false;
-        let isSimulatedCall = false;
-        let simulatedWaveInterval = null;
-        let ringerSynthCtx = null;
-        let ringerIntervalId = null;
-        let globalCallListeners = {};
-
-        const rtcConfig = {
-            iceServers: [
-                { urls: 'stun:stun.l.google.com:19302' },
-                { urls: 'stun:stun1.l.google.com:19302' },
-                { urls: 'stun:stun2.l.google.com:19302' }
-            ]
-        };
 
         const PREDEFINED_FOLDERS = [
             { name: 'Images', icon: 'fa-image', color: 'text-accent-blue', iconBg: 'bg-blue-500/10' },
@@ -962,7 +925,6 @@
                 await fetchAllFilesRecursive();
                 navigateTo('root');
                 loadChatFriendsList();
-                startGlobalCallListening(); // Global incoming call signaling listener registered
             } catch (error) {
                 console.error(error);
                 showToast(`Initialization Failed: ${error.message}`, 'error');
@@ -1303,7 +1265,7 @@
 
                 if (globalViewMode === 'grid') {
                     grid.innerHTML += `
-                        <div draggable="true" data-draggable-file-id="${file.id}" class="file-card-item draggable-card bg-dark-card p-4 rounded-2xl border border-dark-border flex flex-col justify-between h-52 group hover:-translate-y-1 hover:shadow-lg transition-all relative" data-id="${file.id}">
+                        <div draggable="true" data-draggable-file-id="${file.id}" class="file-card-item draggable-card bg-dark-card p-4 rounded-2xl border border-dark-border flex flex-col justify-between h-52 group hover:-translate-y-1 hover:shadow-lg transition-all relative animate-fade-in" data-id="${file.id}">
                             <div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1 z-10">
                                 <button onclick="toggleStar('${file.id}', event)" class="p-1.5 bg-zinc-800 rounded-lg hover:bg-zinc-700 transition-all">
                                     <i class="fa-solid fa-star ${starred}"></i>
@@ -1329,7 +1291,7 @@
                     `;
                 } else {
                     grid.innerHTML += `
-                        <div draggable="true" data-draggable-file-id="${file.id}" class="file-card-item draggable-card bg-dark-card p-3.5 rounded-2xl border border-dark-border flex items-center justify-between group hover:bg-zinc-800/30 transition-all" data-id="${file.id}">
+                        <div draggable="true" data-draggable-file-id="${file.id}" class="file-card-item draggable-card bg-dark-card p-3.5 rounded-2xl border border-dark-border flex items-center justify-between group hover:bg-zinc-800/30 transition-all animate-fade-in" data-id="${file.id}">
                             <div onclick="openInAppPreview('${file.id}', event)" class="flex items-center gap-3.5 min-w-0 cursor-pointer flex-1">
                                 <div class="w-11 h-11 rounded-xl bg-zinc-900 flex items-center justify-center flex-shrink-0 overflow-hidden ${meta.color}">
                                     ${file.mimeType.startsWith('image/') ? `<img id="list-thumb-${file.id}" src="https://placehold.co/40x40/16181f/71717a?text=..." class="w-full h-full object-cover" draggable="false">` : `<i class="fa-solid ${meta.icon} text-lg"></i>`}
@@ -1343,7 +1305,7 @@
                                 <button onclick="toggleStar('${file.id}', event)" class="p-2 hover:bg-zinc-800 rounded-lg transition-colors"><i class="fa-solid fa-star ${starred}"></i></button>
                                 <button onclick="openRenameModal('${file.id}', '${file.name.replace(/'/g, "\\'")}', event)" class="p-2 text-zinc-400 hover:text-brand-500 hover:bg-zinc-800 rounded-lg transition-all"><i class="fa-solid fa-pen-to-square"></i></button>
                                 <button onclick="window.open('${file.webContentLink || file.webViewLink}', '_blank'); event.stopPropagation();" class="p-2 hover:bg-zinc-800 text-brand-400 rounded-lg transition-colors"><i class="fa-solid fa-download"></i></button>
-                                <button onclick="deleteFileItem('${file.id}', event)" class="p-2 hover:bg-rose-950 text-rose-400 rounded-lg transition-colors"><i class="fa-solid fa-trash-can"></i></button>
+                                <button onclick="deleteFileItem('${file.id}', event)" class="p-2 hover:bg-rose-955 text-rose-400 rounded-lg transition-colors"><i class="fa-solid fa-trash-can"></i></button>
                             </div>
                         </div>
                     `;
@@ -1447,6 +1409,7 @@
             }
             document.getElementById('lightbox-modal').classList.add('hidden');
             wrapper.innerHTML = '';
+            document.getElementById('lightbox-edit-btn').classList.add('hidden');
         }
 
         // --- REALTIME CHAT ENGINE (FIREBASE FIRESTORE) ---
@@ -1485,7 +1448,6 @@
                 list.push(friendEmail);
                 localStorage.setItem('mv_chat_friends', JSON.stringify(list));
                 loadChatFriendsList();
-                startGlobalCallListening(); // Update dynamic call listener list
             }
 
             if (unsubscribeChatListener) unsubscribeChatListener();
@@ -1500,10 +1462,6 @@
                     console.error("Firestore loading error:", err);
                     showToast("Configure Firestore rules to test.", "error");
                 });
-
-            // SHOW CHAT CALL HEADER CONTROL PANEL ON CHAT LAUNCH
-            document.getElementById('chat-header-actions').style.display = 'flex';
-            initCallingSignalingListener();
         }
 
         function loadChatFriendsList() {
@@ -1540,7 +1498,6 @@
                 activeChatId = null;
                 if (unsubscribeChatListener) unsubscribeChatListener();
                 document.getElementById('chat-header-name').innerText = "Select a Conversation";
-                document.getElementById('chat-header-actions').style.display = 'none';
                 document.getElementById('chat-messages-scroll').innerHTML = `
                     <div class="m-auto text-center space-y-3 max-w-sm">
                         <div class="w-16 h-16 bg-brand-900/30 text-brand-400 rounded-full flex items-center justify-center mx-auto mb-2"><i class="fa-solid fa-message text-2xl"></i></div>
@@ -1548,7 +1505,6 @@
                     </div>`;
             }
             loadChatFriendsList();
-            startGlobalCallListening(); // Sync global call handlers
         }
 
         async function sendChatMessage(textOverride = null, type = 'text', mediaUrl = null, extraMeta = {}) {
@@ -1756,7 +1712,7 @@
                 listContainer.innerHTML += `
                     <div onclick="executeVaultShareHandshake('${file.id}')" class="p-3 bg-zinc-900 hover:bg-brand-500/10 border border-dark-border hover:border-brand-500/50 rounded-xl cursor-pointer transition-all flex items-center justify-between group">
                         <div class="flex items-center gap-3 min-w-0">
-                            <div class="w-8 h-8 rounded-lg bg-zinc-800 flex items-center justify-center text-sm ${meta.color}"><i class="fa-solid ${meta.icon}"></i></div>
+                            <div class="w-8 h-8 rounded-lg bg-zinc-850 flex items-center justify-center text-sm ${meta.color}"><i class="fa-solid ${meta.icon}"></i></div>
                             <div class="min-w-0">
                                 <p class="text-xs font-bold text-zinc-200 truncate max-w-[200px]">${file.name}</p>
                                 <p class="text-[9px] text-zinc-500">${formatBytes(file.size)}</p>
@@ -1891,9 +1847,9 @@
             chatContainer.addEventListener('dragleave', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                const r = chatContainer.getBoundingClientRect();
+                const rect = chatContainer.getBoundingClientRect();
                 // Check if the pointer actually left the container boundary
-                if (e.clientX <= r.left || e.clientX >= r.right || e.clientY <= r.top || e.clientY >= r.bottom) {
+                if (e.clientX <= rect.left || e.clientX >= rect.right || e.clientY <= rect.top || e.clientY >= rect.bottom) {
                     dropzoneOverlay.style.display = 'none';
                 }
             });
@@ -2450,476 +2406,444 @@
                 setTimeout(() => toast.remove(), 400);
             }, 3000);
         }
+    </script>
 
-        // --- PREMIUM VOICE & VIDEO CALLING ENGINE FUNCTIONS ---
+    <!-- ==========================================================
+         ADDITIONAL PREMIUM MODULES (SAFELY ENHANCING ORIGINAL BASICS)
+         ========================================================== -->
+    <script>
+        // --- MULTI-SELECT & BULK ACTIONS ENGINE ---
+        let selectModeActive = false;
+        let selectedFileIds = [];
 
-        // Local frequency audio synthesis for telephones (eliminates CORS and network audio errors completely!)
-        function startRingtoneSynthesizer(isIncoming = false) {
-            stopRingtoneSynthesizer();
+        function toggleSelectMode() {
+            selectModeActive = !selectModeActive;
+            const btn = document.getElementById('select-mode-btn');
+            if (selectModeActive) {
+                btn.className = "px-3 py-1.5 rounded-lg bg-brand-600 text-white text-xs font-bold transition-all flex items-center gap-1.5 shadow-md shadow-brand-500/30";
+                showToast("Select Mode activated. Click file cards to bundle selections.", "info");
+            } else {
+                btn.className = "px-3 py-1.5 rounded-lg hover:bg-zinc-800 text-zinc-400 text-xs font-semibold transition-all flex items-center gap-1.5";
+                clearBulkSelection();
+            }
+        }
+
+        function initMultiSelectListeners() {
+            const cards = document.querySelectorAll('.file-card-item');
+            cards.forEach(card => {
+                // Ensure no double listeners
+                const newCard = card.cloneNode(true);
+                card.parentNode.replaceChild(newCard, card);
+                
+                const fileId = newCard.getAttribute('data-id');
+
+                // Restore starred states or selections on render
+                if (selectedFileIds.includes(fileId)) {
+                    newCard.classList.add('file-card-selected');
+                }
+
+                newCard.addEventListener('click', (e) => {
+                    if (selectModeActive) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        toggleFileSelection(fileId, newCard);
+                    } else {
+                        // Let original preview handler fire naturally
+                        const isActionButton = e.target.closest('button') || e.target.closest('a');
+                        if (!isActionButton) {
+                            openInAppPreview(fileId);
+                        }
+                    }
+                });
+            });
+        }
+
+        function toggleFileSelection(fileId, element) {
+            const index = selectedFileIds.indexOf(fileId);
+            if (index > -1) {
+                selectedFileIds.splice(index, 1);
+                element.classList.remove('file-card-selected');
+            } else {
+                selectedFileIds.push(fileId);
+                element.classList.add('file-card-selected');
+            }
+            updateBulkActionBar();
+        }
+
+        function updateBulkActionBar() {
+            const bar = document.getElementById('bulk-action-bar');
+            const countLabel = document.getElementById('bulk-select-count');
+            if (selectedFileIds.length > 0) {
+                countLabel.innerText = selectedFileIds.length;
+                bar.classList.remove('hidden');
+                bar.classList.add('flex', 'active');
+            } else {
+                bar.classList.remove('active');
+                setTimeout(() => { if(selectedFileIds.length === 0) bar.classList.add('hidden'); }, 300);
+            }
+        }
+
+        function clearBulkSelection() {
+            selectedFileIds = [];
+            document.querySelectorAll('.file-card-item').forEach(card => card.classList.remove('file-card-selected'));
+            updateBulkActionBar();
+        }
+
+        async function triggerBulkDelete() {
+            if (selectedFileIds.length === 0) return;
+            if (!confirm(`Are you sure you want to permanently delete these ${selectedFileIds.length} items from Drive?`)) return;
+            
+            showToast(`Initiating simultaneous deletion of ${selectedFileIds.length} assets...`, "info");
+            const targets = [...selectedFileIds];
+            clearBulkSelection();
+
             try {
-                ringerSynthCtx = new (window.AudioContext || window.webkitAudioContext)();
-                if (isIncoming) {
-                    // Smooth pulsing sound for incoming calls
-                    ringerIntervalId = setInterval(() => {
-                        if (!ringerSynthCtx) return;
-                        const o1 = ringerSynthCtx.createOscillator();
-                        const o2 = ringerSynthCtx.createOscillator();
-                        const gain = ringerSynthCtx.createGain();
-                        
-                        o1.frequency.value = 523.25; // C5
-                        o2.frequency.value = 659.25; // E5
-                        
-                        gain.gain.setValueAtTime(0, ringerSynthCtx.currentTime);
-                        gain.gain.linearRampToValueAtTime(0.15, ringerSynthCtx.currentTime + 0.1);
-                        gain.gain.linearRampToValueAtTime(0.1, ringerSynthCtx.currentTime + 0.8);
-                        gain.gain.linearRampToValueAtTime(0, ringerSynthCtx.currentTime + 0.9);
-                        
-                        o1.connect(gain);
-                        o2.connect(gain);
-                        gain.connect(ringerSynthCtx.destination);
-                        
-                        o1.start(); o2.start();
-                        o1.stop(ringerSynthCtx.currentTime + 0.9);
-                        o2.stop(ringerSynthCtx.currentTime + 0.9);
-                    }, 1800);
+                await Promise.all(targets.map(id => driveApi(`files/${id}`, 'DELETE')));
+                showToast("Selected items deleted successfully.", "success");
+                
+                // Filter cache locally
+                allFilesCache = allFilesCache.filter(f => !targets.includes(f.id));
+                updateRealtimeFileCounters();
+                fastFilterCurrentDirectory();
+            } catch (err) {
+                showToast("Some delete operations were rejected.", "error");
+                await fetchAllFilesRecursive();
+                fastFilterCurrentDirectory();
+            }
+        }
+
+        async function triggerBulkStar() {
+            if (selectedFileIds.length === 0) return;
+            let list = JSON.parse(localStorage.getItem('mv_starred_items') || '[]');
+            
+            selectedFileIds.forEach(id => {
+                if (list.includes(id)) {
+                    list = list.filter(item => item !== id);
                 } else {
-                    // Elegant pitch sequence for outgoing ringing tone
-                    ringerIntervalId = setInterval(() => {
-                        if (!ringerSynthCtx) return;
-                        const o = ringerSynthCtx.createOscillator();
-                        const gain = ringerSynthCtx.createGain();
-                        o.frequency.setValueAtTime(440, ringerSynthCtx.currentTime);
-                        o.frequency.setValueAtTime(480, ringerSynthCtx.currentTime + 0.1);
-                        
-                        gain.gain.setValueAtTime(0, ringerSynthCtx.currentTime);
-                        gain.gain.linearRampToValueAtTime(0.12, ringerSynthCtx.currentTime + 0.05);
-                        gain.gain.linearRampToValueAtTime(0.12, ringerSynthCtx.currentTime + 1.2);
-                        gain.gain.linearRampToValueAtTime(0, ringerSynthCtx.currentTime + 1.25);
-                        
-                        o.connect(gain);
-                        gain.connect(ringerSynthCtx.destination);
-                        o.start();
-                        o.stop(ringerSynthCtx.currentTime + 1.3);
-                    }, 3000);
+                    list.push(id);
                 }
-            } catch (err) {
-                console.warn("Web Audio Context synthesis restricted by browser sandbox.", err);
-            }
-        }
-
-        function stopRingtoneSynthesizer() {
-            if (ringerIntervalId) {
-                clearInterval(ringerIntervalId);
-                ringerIntervalId = null;
-            }
-            if (ringerSynthCtx) {
-                try { ringerSynthCtx.close(); } catch(e){}
-                ringerSynthCtx = null;
-            }
-        }
-
-        // Bouncing dynamic soundwave visualization
-        function startSimulatedSoundwave() {
-            clearInterval(simulatedWaveInterval);
-            simulatedWaveInterval = setInterval(() => {
-                const waveBars = document.querySelectorAll('#voice-waves span');
-                waveBars.forEach(bar => {
-                    const h = Math.floor(Math.random() * 26) + 4;
-                    bar.style.height = `${h}px`;
-                });
-            }, 100);
-        }
-
-        function stopSimulatedSoundwave() {
-            clearInterval(simulatedWaveInterval);
-            const waveBars = document.querySelectorAll('#voice-waves span');
-            waveBars.forEach(bar => bar.style.height = '4px');
-        }
-
-        // Setup persistent global listeners for incoming calls across all added chats
-        function startGlobalCallListening() {
-            // Clean up previous global subscriptions
-            Object.keys(globalCallListeners).forEach(key => {
-                if (globalCallListeners[key]) globalCallListeners[key]();
             });
-            globalCallListeners = {};
 
-            const list = JSON.parse(localStorage.getItem('mv_chat_friends') || '[]');
-            list.forEach(friendEmail => {
-                const chatId = getChatId(userProfile.email.toLowerCase(), friendEmail);
-                globalCallListeners[chatId] = db.collection('chats').doc(chatId).collection('callState').doc('current')
-                    .onSnapshot(doc => {
-                        if (doc.exists) {
-                            const data = doc.data();
-                            handleGlobalCallStateUpdate(chatId, data);
-                        }
-                    }, err => {
-                        console.warn("Firestore Call Hook Issue:", err);
-                    });
+            localStorage.setItem('mv_starred_items', JSON.stringify(list));
+            showToast("Bulk starring metrics updated.", "success");
+            clearBulkSelection();
+            fastFilterCurrentDirectory();
+        }
+
+        function openBulkMoveModal() {
+            if (selectedFileIds.length === 0) return;
+            const modal = document.getElementById('bulk-move-modal');
+            const listEl = document.getElementById('bulk-move-folder-list');
+            listEl.innerHTML = '';
+            
+            // Render target choices
+            listEl.innerHTML += `
+                <div onclick="executeBulkMove('root')" class="p-3 bg-zinc-900 hover:bg-brand-500/10 border border-dark-border rounded-xl cursor-pointer text-xs font-bold text-zinc-300 transition-colors flex items-center gap-2">
+                    <i class="fa-solid fa-house-chimney text-brand-500"></i> Dashboard Root (Unsorted)
+                </div>
+            `;
+
+            PREDEFINED_FOLDERS.forEach(f => {
+                listEl.innerHTML += `
+                    <div onclick="executeBulkMove('${f.name}')" class="p-3 bg-zinc-900 hover:bg-brand-500/10 border border-dark-border rounded-xl cursor-pointer text-xs font-bold text-zinc-300 transition-colors flex items-center gap-2">
+                        <i class="fa-solid ${f.icon} ${f.color}"></i> ${f.name} Compartment
+                    </div>
+                `;
             });
-        }
 
-        // Handle structural updates on calling statuses from the database
-        function handleGlobalCallStateUpdate(chatId, data) {
-            if (data.status === 'ringing') {
-                if (data.receiver === userProfile.email.toLowerCase()) {
-                    // Trigger incoming call banner
-                    currentCallData = { ...data, chatId };
-                    document.getElementById('incoming-caller-name').innerText = data.caller;
-                    document.getElementById('incoming-avatar').innerText = data.caller.charAt(0).toUpperCase();
-                    document.getElementById('incoming-call-modal').classList.remove('hidden');
-                    startRingtoneSynthesizer(true);
+            Object.keys(folderMap).forEach(customFolderName => {
+                if (!PREDEFINED_FOLDERS.find(p => p.name === customFolderName) && customFolderName !== 'Secret Vault' && customFolderName !== 'MyVault') {
+                    listEl.innerHTML += `
+                        <div onclick="executeBulkMove('${customFolderName}')" class="p-3 bg-zinc-900 hover:bg-brand-500/10 border border-dark-border rounded-xl cursor-pointer text-xs font-bold text-zinc-300 transition-colors flex items-center gap-2">
+                            <i class="fa-solid fa-folder text-purple-400"></i> ${customFolderName}
+                        </div>
+                    `;
                 }
-            } else if (data.status === 'ended' || data.status === 'idle') {
-                if (currentCallData && currentCallData.chatId === chatId) {
-                    cleanupCallSessionLocal();
-                }
-            }
+            });
+
+            modal.classList.remove('hidden');
         }
 
-        // Listen for specific calling states once active chat workspace is active
-        function initCallingSignalingListener() {
-            if (!activeChatId) return;
-            if (activeCallListener) activeCallListener();
-
-            activeCallListener = db.collection('chats').doc(activeChatId).collection('callState').doc('current')
-                .onSnapshot(doc => {
-                    if (doc.exists) {
-                        const data = doc.data();
-                        onDirectCallStateUpdate(data);
-                    }
-                }, err => {
-                    console.warn("Direct workspace call sync failure:", err);
-                });
+        function closeBulkMoveModal() {
+            document.getElementById('bulk-move-modal').classList.add('hidden');
         }
 
-        // Processes updates in the current workspace call document
-        async function onDirectCallStateUpdate(data) {
-            if (data.status === 'connected') {
-                stopRingtoneSynthesizer();
-                document.getElementById('call-status-label').innerText = "Encrypted Connection Established.";
-                document.getElementById('remote-placeholder-status').innerText = "Direct media pipeline secured.";
-                startSimulatedSoundwave();
+        async function executeBulkMove(targetFolderName) {
+            closeBulkMoveModal();
+            const targetFolderId = targetFolderName === 'root' ? vaultFolderId : folderMap[targetFolderName];
+            if (!targetFolderId) return;
 
-                if (data.mode === 'real' && !isSimulatedCall) {
-                    if (data.caller === userProfile.email.toLowerCase()) {
-                        // Caller handles answer SDP handshake
-                        if (data.answer && peerConnection && peerConnection.signalingState !== "stable") {
-                            const answerDesc = new RTCSessionDescription(JSON.parse(data.answer));
-                            await peerConnection.setRemoteDescription(answerDesc);
-                        }
-                    }
-                    // Setup remote ICE handshake listener
-                    syncRemoteIceCandidates(data);
-                } else if (data.mode === 'simulated' || isSimulatedCall) {
-                    // Visual simulation visualizer activated
-                    document.getElementById('remote-placeholder').classList.remove('hidden');
-                    document.getElementById('remote-placeholder-name').innerText = data.caller === userProfile.email.toLowerCase() ? data.receiver : data.caller;
-                }
-            } else if (data.status === 'ended') {
-                cleanupCallSessionLocal();
-            }
-        }
+            showToast(`Moving ${selectedFileIds.length} files to ${targetFolderName}...`, "info");
+            const targets = [...selectedFileIds];
+            clearBulkSelection();
 
-        // Dynamically applies remote ICE elements
-        function syncRemoteIceCandidates(data) {
-            if (!peerConnection) return;
-            const targetCandidates = data.caller === userProfile.email.toLowerCase() ? data.receiverCandidates : data.callerCandidates;
-            if (targetCandidates && Array.isArray(targetCandidates)) {
-                targetCandidates.forEach(candStr => {
-                    try {
-                        const cand = new RTCIceCandidate(JSON.parse(candStr));
-                        peerConnection.addIceCandidate(cand).catch(e => {});
-                    } catch(e){}
-                });
-            }
-        }
-
-        // Get hardware stream safely with graceful simulated fallback
-        async function getLocalMediaStream(type) {
-            const constraints = {
-                audio: true,
-                video: type === 'video' ? { width: 320, height: 240, facingMode: "user" } : false
-            };
             try {
-                localStream = await navigator.mediaDevices.getUserMedia(constraints);
-                const localVideo = document.getElementById('local-video');
-                if (localVideo) {
-                    localVideo.srcObject = localStream;
-                    localVideo.muted = true;
-                    localVideo.style.display = 'block';
-                    document.getElementById('local-placeholder').style.display = 'none';
-                    localVideo.play().catch(e => {});
-                }
-                isSimulatedCall = false;
-                return true;
+                await Promise.all(targets.map(async (fileId) => {
+                    const file = allFilesCache.find(f => f.id === fileId);
+                    if (!file) return;
+                    const currentParentId = (file.parents && file.parents.length > 0) ? file.parents[0] : vaultFolderId;
+                    if (currentParentId !== targetFolderId) {
+                        await driveApi(`files/${fileId}?addParents=${targetFolderId}&removeParents=${currentParentId}`, 'PATCH');
+                        file.parents = [targetFolderId];
+                    }
+                }));
+                showToast(`Successfully moved items to ${targetFolderName}!`, "success");
+                updateRealtimeFileCounters();
+                fastFilterCurrentDirectory();
             } catch (err) {
-                console.warn("Hardware camera/mic locked or unavailable. Running simulated calling module instead.", err);
-                isSimulatedCall = true;
-                const localVideo = document.getElementById('local-video');
-                if (localVideo) localVideo.style.display = 'none';
-                document.getElementById('local-placeholder').innerText = "Simulated";
-                document.getElementById('local-placeholder').style.display = 'flex';
-                return false;
+                showToast("Failed to complete some move transactions.", "error");
+                await fetchAllFilesRecursive();
+                fastFilterCurrentDirectory();
             }
         }
 
-        // Initiate outgoing voice or video call
-        async function initiateCall(type) {
-            if (!activeChatId || !activeChatFriendEmail) {
-                showToast("Select a conversation room first.", "error");
+
+        // --- INTEGRATED TEXT & SOURCE CODE EDITOR MODULE ---
+        const EDITABLE_EXTENSIONS = ['.txt', '.md', '.json', '.js', '.py', '.html', '.css', '.xml', '.csv', '.ini', '.yaml', '.yml'];
+
+        function handleTextEditorFeature(fileId) {
+            const file = allFilesCache.find(f => f.id === fileId);
+            if (!file) return;
+
+            const filenameLower = file.name.toLowerCase();
+            const isTextType = file.mimeType.startsWith('text/') || 
+                               file.mimeType.includes('json') || 
+                               file.mimeType.includes('javascript') || 
+                               EDITABLE_EXTENSIONS.some(ext => filenameLower.endsWith(ext));
+
+            const editBtn = document.getElementById('lightbox-edit-btn');
+            if (isTextType) {
+                editBtn.classList.remove('hidden');
+                editBtn.onclick = () => loadTextIntoSandboxEditor(fileId);
+            } else {
+                editBtn.classList.add('hidden');
+            }
+        }
+
+        async function loadTextIntoSandboxEditor(fileId) {
+            const wrapper = document.getElementById('lightbox-content-wrapper');
+            const file = allFilesCache.find(f => f.id === fileId);
+            wrapper.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin text-4xl text-brand-500"></i>`;
+
+            try {
+                const res = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`, {
+                    headers: { 'Authorization': `Bearer ${accessToken}` }
+                });
+                if (!res.ok) throw new Error();
+                const text = await res.text();
+
+                wrapper.innerHTML = `
+                    <div class="glass w-full max-w-4xl h-[70vh] rounded-3xl flex flex-col p-5 animate-slide-up relative">
+                        <textarea id="myvault-editor-area" class="w-full flex-grow bg-zinc-950 text-emerald-400 font-mono text-xs md:text-sm p-5 rounded-2xl border border-dark-border outline-none focus:border-brand-500 resize-none leading-relaxed" spellcheck="false">${text}</textarea>
+                        <div class="flex flex-col sm:flex-row justify-between items-center mt-4 gap-3 flex-shrink-0">
+                            <span class="text-[10px] text-zinc-500 font-mono font-bold tracking-wide uppercase">Sandbox Editor Mode • Decrypted Local Stream</span>
+                            <div class="flex gap-2">
+                                <button onclick="openInAppPreview('${fileId}')" class="px-4 py-2 text-xs font-bold text-zinc-400 hover:bg-zinc-800 rounded-xl transition-all">Discard</button>
+                                <button onclick="saveTextEditorChanges('${fileId}')" id="myvault-editor-save-btn" class="px-5 py-2.5 bg-brand-600 hover:bg-brand-500 text-white text-xs font-bold rounded-xl transition-all flex items-center gap-1.5 shadow-lg shadow-brand-500/25">
+                                    <i class="fa-solid fa-floppy-disk"></i> Save Encryption Changes
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } catch (err) {
+                wrapper.innerHTML = `<div class="text-white text-center"><i class="fa-solid fa-triangle-exclamation text-3xl text-rose-500 mb-2"></i><p class="text-xs">Failed to load local code stream.</p></div>`;
+            }
+        }
+
+        async function saveTextEditorChanges(fileId) {
+            const saveBtn = document.getElementById('myvault-editor-save-btn');
+            const textVal = document.getElementById('myvault-editor-area').value;
+            const file = allFilesCache.find(f => f.id === fileId);
+            
+            const originalText = saveBtn.innerHTML;
+            saveBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Saving to Google Cloud...`;
+            saveBtn.disabled = true;
+
+            try {
+                const response = await fetch(`https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=media`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`,
+                        'Content-Type': file ? file.mimeType : 'text/plain'
+                    },
+                    body: textVal
+                });
+                if (!response.ok) throw new Error();
+                
+                showToast("File changes securely updated on Drive!", "success");
+                if (file) {
+                    file.size = new Blob([textVal]).size.toString();
+                }
+                updateRealtimeFileCounters();
+                fastFilterCurrentDirectory();
+                closeLightbox();
+            } catch (err) {
+                showToast("Failed to sync edited content.", "error");
+                saveBtn.innerHTML = originalText;
+                saveBtn.disabled = false;
+            }
+        }
+
+
+        // --- PERSISTENT AUDIO PLAYLIST PLAYER MODULE ---
+        let audioPlaylistQueue = [];
+        let currentPlaylistIndex = 0;
+        let isAudioWidgetCollapsed = false;
+
+        function launchAudioPlaylistWidget() {
+            // Find all audios in the current filtered/directory set
+            const audioFiles = allFilesCache.filter(file => {
+                if (file.mimeType === 'application/vnd.google-apps.folder') return false;
+                return file.parents && file.parents.includes(currentFolderId) && file.mimeType.startsWith('audio/');
+            });
+
+            if (audioFiles.length === 0) {
+                showToast("No playable audio tracks in this compartment.", "error");
                 return;
             }
-            showToast("Securing WebRTC port...", "info");
-            startRingtoneSynthesizer(false);
 
-            // Initialize local viewport controls
-            isAudioMuted = false;
-            isVideoMuted = false;
-            document.getElementById('call-mute-icon').className = 'fa-solid fa-microphone';
-            document.getElementById('call-cam-icon').className = 'fa-solid fa-video';
+            audioPlaylistQueue = audioFiles;
+            currentPlaylistIndex = 0;
+            
+            const widget = document.getElementById('audio-playlist-widget');
+            widget.classList.remove('hidden');
+            widget.classList.add('flex');
+            
+            renderWidgetQueue();
+            loadWidgetTrack(0);
+        }
 
-            // Fetch local stream
-            const hardwareSuccess = await getLocalMediaStream(type);
-            const callMode = hardwareSuccess ? 'real' : 'simulated';
-
-            // Show UI Overlay
-            document.getElementById('call-partner-name').innerText = activeChatFriendEmail;
-            document.getElementById('call-partner-avatar').innerText = activeChatFriendEmail.charAt(0).toUpperCase();
-            document.getElementById('remote-placeholder-name').innerText = activeChatFriendEmail;
-            document.getElementById('remote-placeholder-avatar').innerText = activeChatFriendEmail.charAt(0).toUpperCase();
-            document.getElementById('remote-placeholder-status').innerText = "Ringing... Waiting for answer.";
-            document.getElementById('call-type-badge').innerText = `${type} Call`;
-            document.getElementById('call-status-label').innerText = "Ringing...";
-            document.getElementById('call-overlay').classList.remove('hidden');
-
-            if (type === 'audio') {
-                document.getElementById('local-video-container').classList.add('hidden');
-            } else {
-                document.getElementById('local-video-container').classList.remove('hidden');
-            }
-
-            // Write structural call proposal into database
-            const callDoc = db.collection('chats').doc(activeChatId).collection('callState').doc('current');
-            await callDoc.set({
-                caller: userProfile.email.toLowerCase(),
-                receiver: activeChatFriendEmail,
-                status: 'ringing',
-                type: type,
-                mode: callMode,
-                timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-                callerCandidates: [],
-                receiverCandidates: []
+        function renderWidgetQueue() {
+            const container = document.getElementById('widget-queue-list');
+            container.innerHTML = '';
+            
+            audioPlaylistQueue.forEach((file, index) => {
+                const activeClass = index === currentPlaylistIndex ? 'text-brand-400 bg-brand-500/10 border-l-2 border-brand-500 pl-2' : 'text-zinc-400 hover:bg-zinc-800/40';
+                container.innerHTML += `
+                    <div onclick="loadWidgetTrack(${index})" class="p-2 rounded-lg cursor-pointer text-[10px] font-bold truncate transition-all ${activeClass}">
+                        ${index + 1}. ${file.name}
+                    </div>
+                `;
             });
-
-            if (!isSimulatedCall) {
-                // Initialize WebRTC Offer Configuration
-                await setupRTCPeerConnection(type, true);
-            } else {
-                startSimulatedSoundwave();
-            }
         }
 
-        // Accept incoming call
-        async function acceptCall() {
-            if (!currentCallData) return;
-            stopRingtoneSynthesizer();
-            document.getElementById('incoming-call-modal').classList.add('hidden');
+        async function loadWidgetTrack(index) {
+            if (index < 0 || index >= audioPlaylistQueue.length) return;
+            currentPlaylistIndex = index;
+            renderWidgetQueue();
 
-            // Initialize controls
-            isAudioMuted = false;
-            isVideoMuted = false;
-            document.getElementById('call-mute-icon').className = 'fa-solid fa-microphone';
-            document.getElementById('call-cam-icon').className = 'fa-solid fa-video';
+            const file = audioPlaylistQueue[index];
+            const titleLabel = document.getElementById('widget-track-title');
+            const player = document.getElementById('widget-audio-element');
+            const playText = document.getElementById('widget-play-text');
 
-            // Auto-navigate to conversation if callee was in other panel
-            if (activeChatId !== currentCallData.chatId) {
-                activateChatRoom(currentCallData.caller);
-            }
+            titleLabel.innerText = "Connecting Secure Stream...";
+            player.src = '';
+            playText.innerText = "Loading...";
 
-            const hardwareSuccess = await getLocalMediaStream(currentCallData.type);
-            isSimulatedCall = currentCallData.mode === 'simulated' || !hardwareSuccess;
-
-            // Display calling viewport
-            document.getElementById('call-partner-name').innerText = currentCallData.caller;
-            document.getElementById('call-partner-avatar').innerText = currentCallData.caller.charAt(0).toUpperCase();
-            document.getElementById('remote-placeholder-name').innerText = currentCallData.caller;
-            document.getElementById('remote-placeholder-avatar').innerText = currentCallData.caller.charAt(0).toUpperCase();
-            document.getElementById('remote-placeholder-status').innerText = "Securing Peer Pipe...";
-            document.getElementById('call-type-badge').innerText = `${currentCallData.type} Call`;
-            document.getElementById('call-status-label').innerText = "Securing feed...";
-            document.getElementById('call-overlay').classList.remove('hidden');
-
-            if (currentCallData.type === 'audio') {
-                document.getElementById('local-video-container').classList.add('hidden');
-            } else {
-                document.getElementById('local-video-container').classList.remove('hidden');
-            }
-
-            // Push connection state to database
-            const callDoc = db.collection('chats').doc(activeChatId).collection('callState').doc('current');
-            await callDoc.update({
-                status: 'connected',
-                mode: isSimulatedCall ? 'simulated' : 'real',
-                acceptTimestamp: firebase.firestore.FieldValue.serverTimestamp()
-            });
-
-            if (!isSimulatedCall) {
-                // Create RTCPeerConnection as callee
-                await setupRTCPeerConnection(currentCallData.type, false);
-            } else {
-                startSimulatedSoundwave();
-            }
-        }
-
-        // Decline incoming call invitation
-        async function declineCall() {
-            if (!currentCallData) return;
-            stopRingtoneSynthesizer();
-            document.getElementById('incoming-call-modal').classList.add('hidden');
-
-            const callDoc = db.collection('chats').doc(currentCallData.chatId).collection('callState').doc('current');
-            await callDoc.set({
-                status: 'ended',
-                reason: 'declined',
-                endedBy: userProfile.email.toLowerCase(),
-                timestamp: firebase.firestore.FieldValue.serverTimestamp()
-            });
-            currentCallData = null;
-        }
-
-        // Disconnect or Terminate live calling session
-        async function hangUpCall() {
-            cleanupCallSessionLocal();
-            if (activeChatId) {
-                const callDoc = db.collection('chats').doc(activeChatId).collection('callState').doc('current');
-                await callDoc.set({
-                    status: 'ended',
-                    reason: 'hung_up',
-                    endedBy: userProfile.email.toLowerCase(),
-                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            try {
+                const res = await fetch(`https://www.googleapis.com/drive/v3/files/${file.id}?alt=media`, {
+                    headers: { 'Authorization': `Bearer ${accessToken}` }
                 });
-            }
-        }
-
-        // Localized structural variables teardown
-        function cleanupCallSessionLocal() {
-            stopRingtoneSynthesizer();
-            stopSimulatedSoundwave();
-
-            // Hardware tracks release
-            if (localStream) {
-                localStream.getTracks().forEach(track => track.stop());
-                localStream = null;
-            }
-            if (remoteStream) {
-                remoteStream.getTracks().forEach(track => track.stop());
-                remoteStream = null;
-            }
-
-            // Teardown WebRTC peer connections
-            if (peerConnection) {
-                peerConnection.close();
-                peerConnection = null;
-            }
-
-            // Viewport states reset
-            document.getElementById('call-overlay').classList.add('hidden');
-            document.getElementById('incoming-call-modal').classList.add('hidden');
-            document.getElementById('remote-video').classList.add('hidden');
-            document.getElementById('remote-placeholder').classList.remove('hidden');
-            document.getElementById('local-video-container').classList.add('hidden');
-
-            const localVideo = document.getElementById('local-video');
-            if (localVideo) localVideo.srcObject = null;
-            const remoteVideo = document.getElementById('remote-video');
-            if (remoteVideo) remoteVideo.srcObject = null;
-
-            currentCallData = null;
-            showToast("Calling session disconnected.", "info");
-        }
-
-        // RTCPeerConnection core structure setup
-        async function setupRTCPeerConnection(type, isCaller) {
-            peerConnection = new RTCPeerConnection(rtcConfig);
-
-            // Append local track elements to WebRTC pipeline
-            if (localStream) {
-                localStream.getTracks().forEach(track => {
-                    peerConnection.addTrack(track, localStream);
-                });
-            }
-
-            // Stream pipelines hook
-            peerConnection.ontrack = (event) => {
-                remoteStream = event.streams[0];
-                const remoteVid = document.getElementById('remote-video');
-                if (remoteVid) {
-                    remoteVid.srcObject = remoteStream;
-                    remoteVid.classList.remove('hidden');
-                    document.getElementById('remote-placeholder').classList.add('hidden');
-                    remoteVid.play().catch(e => {});
-                }
-            };
-
-            // Ice candidate propagation pipeline
-            peerConnection.onicecandidate = async (event) => {
-                if (event.candidate && activeChatId) {
-                    const fieldName = isCaller ? 'callerCandidates' : 'receiverCandidates';
-                    const callDoc = db.collection('chats').doc(activeChatId).collection('callState').doc('current');
-                    await callDoc.update({
-                        [fieldName]: firebase.firestore.FieldValue.arrayUnion(JSON.stringify(event.candidate.toJSON()))
-                    });
-                }
-            };
-
-            const callDoc = db.collection('chats').doc(activeChatId).collection('callState').doc('current');
-
-            if (isCaller) {
-                // Generate and publish Offer
-                const offer = await peerConnection.createOffer();
-                await peerConnection.setLocalDescription(offer);
-                await callDoc.update({
-                    offer: JSON.stringify(offer)
-                });
-            } else {
-                // Await offer, then publish Answer SDP
-                const snap = await callDoc.get();
-                const offerObj = JSON.parse(snap.data().offer);
-                await peerConnection.setRemoteDescription(new RTCSessionDescription(offerObj));
+                if (!res.ok) throw new Error();
+                const blob = await res.blob();
+                const localUrl = URL.createObjectURL(blob);
                 
-                const answer = await peerConnection.createAnswer();
-                await peerConnection.setLocalDescription(answer);
-                await callDoc.update({
-                    answer: JSON.stringify(answer)
-                });
+                titleLabel.innerText = file.name;
+                player.src = localUrl;
+                player.play();
+                playText.innerText = "Pause";
+            } catch (err) {
+                titleLabel.innerText = "Stream Refused. Skipping...";
+                setTimeout(nextWidgetTrack, 2000);
             }
         }
 
-        // Toggles microphone track active state
-        function toggleCallMute() {
-            if (localStream && localStream.getAudioTracks().length > 0) {
-                isAudioMuted = !isAudioMuted;
-                localStream.getAudioTracks().forEach(track => track.enabled = !isAudioMuted);
-                const icon = document.getElementById('call-mute-icon');
-                icon.className = isAudioMuted ? 'fa-solid fa-microphone-slash text-rose-500 animate-pulse' : 'fa-solid fa-microphone';
-                showToast(isAudioMuted ? "Microphone muted" : "Microphone active", "info");
+        function togglePlayPauseWidget() {
+            const player = document.getElementById('widget-audio-element');
+            const playText = document.getElementById('widget-play-text');
+            if (player.paused) {
+                player.play();
+                playText.innerText = "Pause";
+            } else {
+                player.pause();
+                playText.innerText = "Play";
             }
         }
 
-        // Toggles camera track active state
-        function toggleCallCamera() {
-            if (localStream && localStream.getVideoTracks().length > 0) {
-                isVideoMuted = !isVideoMuted;
-                localStream.getVideoTracks().forEach(track => track.enabled = !isVideoMuted);
-                const icon = document.getElementById('call-cam-icon');
-                icon.className = isVideoMuted ? 'fa-solid fa-video-slash text-rose-500 animate-pulse' : 'fa-solid fa-video';
-                
-                document.getElementById('local-video').style.display = isVideoMuted ? 'none' : 'block';
-                document.getElementById('local-placeholder').style.display = isVideoMuted ? 'flex' : 'none';
-                showToast(isVideoMuted ? "Camera stream paused" : "Camera stream active", "info");
+        function nextWidgetTrack() {
+            if (currentPlaylistIndex + 1 < audioPlaylistQueue.length) {
+                loadWidgetTrack(currentPlaylistIndex + 1);
+            } else {
+                showToast("Reached end of active queue.", "info");
             }
         }
+
+        function prevWidgetTrack() {
+            if (currentPlaylistIndex - 1 >= 0) {
+                loadWidgetTrack(currentPlaylistIndex - 1);
+            }
+        }
+
+        function toggleAudioWidgetCollapse() {
+            isAudioWidgetCollapsed = !isAudioWidgetCollapsed;
+            const body = document.getElementById('widget-player-body');
+            const icon = document.getElementById('widget-collapse-icon');
+            if (isAudioWidgetCollapsed) {
+                body.classList.add('hidden');
+                icon.className = "fa-solid fa-chevron-up text-[10px]";
+            } else {
+                body.classList.remove('hidden');
+                icon.className = "fa-solid fa-chevron-down text-[10px]";
+            }
+        }
+
+        function closeAudioWidget() {
+            const widget = document.getElementById('audio-playlist-widget');
+            const player = document.getElementById('widget-audio-element');
+            player.pause();
+            player.src = '';
+            widget.classList.add('hidden');
+            widget.classList.remove('flex');
+        }
+
+        // Attach finished listener to widget player
+        document.getElementById('widget-audio-element').addEventListener('ended', () => {
+            nextWidgetTrack();
+        });
+
+
+        // --- DECORATING PREWRITTEN FUNCTIONS (MONKEY PATCHING) ---
+        // This is a premium software pattern that overrides function runtimes without touching prewritten scripts!
+        
+        const originalOpenInAppPreview = window.openInAppPreview;
+        window.openInAppPreview = async function(fileId, event) {
+            await originalOpenInAppPreview(fileId, event);
+            handleTextEditorFeature(fileId);
+        };
+
+        const originalRenderFiles = window.renderFiles;
+        window.renderFiles = function(filteredSet = null) {
+            originalRenderFiles(filteredSet);
+            initMultiSelectListeners();
+        };
+
+        const originalNavigateTo = window.navigateTo;
+        window.navigateTo = function(targetFolder) {
+            originalNavigateTo(targetFolder);
+            clearBulkSelection();
+            
+            // Handle audio compartmental playlist launcher
+            const triggerContainer = document.getElementById('audio-playlist-trigger-container');
+            if (targetFolder === 'Audio') {
+                triggerContainer.classList.remove('hidden');
+                triggerContainer.classList.add('inline-block');
+            } else {
+                triggerContainer.classList.add('hidden');
+                triggerContainer.classList.remove('inline-block');
+            }
+        };
     </script>
 </body>
 </html>
