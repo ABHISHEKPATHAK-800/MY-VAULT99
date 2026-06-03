@@ -23,7 +23,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
     
-    <!-- Tailwind CSS with custom Earth-derived Madhubani palette adjustments -->
+    <!-- Tailwind CSS with custom dynamic CSS variable mapping -->
     <script src="https://cdn.tailwindcss.com"></script>
     
     <script>
@@ -37,12 +37,12 @@
                     },
                     colors: {
                         brand: {
-                            50: '#fef3c7',
-                            100: '#fde68a',
-                            500: '#b45309', // Deep Ochre Yellow / Earthy Amber
-                            600: '#92400e', // Dark Madder Root Gold
-                            700: '#78350f',
-                            900: '#451a03'
+                            50: 'rgb(var(--brand-50))',
+                            100: 'rgb(var(--brand-100))',
+                            500: 'rgb(var(--brand-500))', // Dynamic Theme Color
+                            600: 'rgb(var(--brand-600))',
+                            700: 'rgb(var(--brand-700))',
+                            900: 'rgb(var(--brand-900))'
                         },
                         accent: {
                             emerald: '#065f46', // Deep Rice-paste Green
@@ -74,11 +74,23 @@
     </script>
 
     <style>
+        :root {
+            --brand-50: 254, 243, 199;
+            --brand-100: 253, 230, 138;
+            --brand-500: 180, 83, 9; /* Ochre Default */
+            --brand-600: 146, 64, 14;
+            --brand-700: 120, 53, 15;
+            --brand-900: 69, 26, 3;
+        }
+
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
             -webkit-tap-highlight-color: transparent;
-            /* Premium low-contrast background repeating fish/nature canvas texture */
             background-color: #07070a;
+        }
+
+        /* Subtle organic Madhubani background overlay */
+        .madhubani-bg-pattern {
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Cg fill='%23b45309' fill-opacity='0.035'%3E%3Cpath d='M11 18c3.8 0 7-3.2 7-7s-3.2-7-7-7-7 3.2-7 7 3.2 7 7 7zm0-12c2.8 0 5 2.2 5 5s-2.2 5-5 5-5-2.2-5-5 2.2-5 5-5zm50 76c3.8 0 7-3.2 7-7s-3.2-7-7-7-7 3.2-7 7 3.2 7 7 7zm0-12c2.8 0 5 2.2 5 5s-2.2 5-5 5-5-2.2-5-5 2.2-5 5-5zM100 0h-4v4h4V0zm-4 4h-4v4h4V4zm-4 4h-4v4h4V8zm-4 4h-4v4h4v-4zm-4 4h-4v4h4v-4zm-4 4h-4v4h4v-4zm-4 4h-4v4h4v-4zm-4 4h-4v4h4v-4zm-4 4h-4v4h4v-4zm-4 4h-4v4h4v-4zm-4 4h-4v4h4v-4zm-4 4h-4v4h4v-4zm-4 4h-4v4h4v-4zm-4 4h-4v4h4v-4zm-4 4h-4v4h4v-4zm-4 4h-4v4h4v-4zM24 6h4v4h-4V6zm4-4h4v4h-4V2zm4-2h4v4h-4V0zM0 100h4v-4H0v4zm4-4h4v-4H4v4zm4-4h4v-4H8v4zm4-4h4v-4h-4v4zm4-4h4v-4h-4v4zm4-4h4v-4h-4v4zm4-4h4v-4h-4v4zm4-4h4v-4h-4v4zm4-4h4v-4h-4v4zm4-4h4v-4h-4v4zm4-4h4v-4h-4v4zm4-4h4v-4h-4v4zm4-4h4v-4h-4v4zm4-4h4v-4h-4v4zm4-4h4v-4h-4v4zm4-4h4v-4h-4v4zM76 94h4v4h-4v-4zm4-4h4v4h-4v-4zm4-4h4v4h-4v-4z'/%3E%3C/g%3E%3C/svg%3E");
         }
         
@@ -93,13 +105,13 @@
             background: rgba(15, 16, 21, 0.85);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
-            border: 3px double rgba(180, 83, 9, 0.15);
+            border: 3px double rgba(var(--brand-rgb-primary, 180, 83, 9), 0.15);
         }
 
         .sidebar-active {
-            background: linear-gradient(135deg, rgba(180, 83, 9, 0.12) 0%, rgba(180, 83, 9, 0.02) 100%);
-            border-left: 4px solid #b45309;
-            color: #fde68a !important;
+            background: linear-gradient(135deg, rgba(var(--brand-rgb-primary, 180, 83, 9), 0.12) 0%, rgba(var(--brand-rgb-primary, 180, 83, 9), 0.02) 100%);
+            border-left: 4px solid rgb(var(--brand-500));
+            color: rgb(var(--brand-100)) !important;
         }
 
         /* Custom Context Menu Styling */
@@ -112,9 +124,9 @@
 
         /* Drag and Drop visual feedback with traditional double-border focus */
         .drag-hover-active {
-            border-color: #b45309 !important;
+            border-color: rgb(var(--brand-500)) !important;
             border-style: double !important;
-            background-color: rgba(180, 83, 9, 0.08) !important;
+            background-color: rgba(var(--brand-rgb-primary, 180, 83, 9), 0.08) !important;
             transform: scale(1.015);
         }
         
@@ -127,9 +139,9 @@
 
         /* Multi-select and Bulk Action Bar Styles */
         .file-card-selected {
-            border-color: #b45309 !important;
-            background-color: rgba(180, 83, 9, 0.08) !important;
-            box-shadow: 0 0 0 2px rgba(180, 83, 9, 0.25);
+            border-color: rgb(var(--brand-500)) !important;
+            background-color: rgba(var(--brand-rgb-primary, 180, 83, 9), 0.08) !important;
+            box-shadow: 0 0 0 2px rgba(var(--brand-rgb-primary, 180, 83, 9), 0.25);
         }
         .bulk-action-bar {
             transform: translate(-50%, 100px);
@@ -142,13 +154,23 @@
         /* Repeating geometric folk design dividers */
         .madhubani-divider {
             height: 6px;
-            background-image: repeating-linear-gradient(45deg, transparent, transparent 6px, rgba(180, 83, 9, 0.15) 6px, rgba(180, 83, 9, 0.15) 12px);
-            border-top: 1px solid rgba(180, 83, 9, 0.1);
-            border-bottom: 1px solid rgba(180, 83, 9, 0.1);
+            background-image: repeating-linear-gradient(45deg, transparent, transparent 6px, rgba(var(--brand-rgb-primary, 180, 83, 9), 0.15) 6px, rgba(var(--brand-rgb-primary, 180, 83, 9), 0.15) 12px);
+            border-top: 1px solid rgba(var(--brand-rgb-primary, 180, 83, 9), 0.1);
+            border-bottom: 1px solid rgba(var(--brand-rgb-primary, 180, 83, 9), 0.1);
+        }
+
+        /* Pulsing rings for Simulated Calling screen */
+        .pulse-ring-folk {
+            animation: pulseRing 2s cubic-bezier(0.215, 0.610, 0.355, 1) infinite;
+        }
+        @keyframes pulseRing {
+            0% { transform: scale(0.95); opacity: 0.8; }
+            50% { transform: scale(1.15); opacity: 0.4; }
+            100% { transform: scale(1.3); opacity: 0; }
         }
     </style>
 </head>
-<body class="bg-dark-bg text-zinc-100 transition-colors duration-200 overflow-hidden min-h-screen">
+<body id="app-body" class="madhubani-bg-pattern text-zinc-100 transition-colors duration-200 overflow-hidden min-h-screen">
 
     <!-- Login View -->
     <div id="login-view" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-dark-bg/95 backdrop-blur-md animate-fade-in">
@@ -162,7 +184,7 @@
                         <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-500 opacity-75"></span>
                         <span class="relative inline-flex rounded-full h-2 w-2 bg-brand-500"></span>
                     </span>
-                    <span class="text-xs font-semibold tracking-wide text-brand-100 uppercase">Secure Chat Core v5.0</span>
+                    <span class="text-xs font-semibold tracking-wide text-brand-100 uppercase">Secure Chat Core v5.1</span>
                 </div>
                 <!-- Artistic branding heading -->
                 <h1 class="text-4xl font-artistic tracking-wide text-white mb-2">MyVault <span class="bg-gradient-to-r from-brand-100 to-brand-500 bg-clip-text text-transparent">Fast</span></h1>
@@ -284,7 +306,7 @@
                         <i class="fa-solid fa-sliders text-lg"></i>
                     </button>
                     
-                    <!-- Profile menu with organic curved frame shape (Madhubani silhouette profile) -->
+                    <!-- Profile menu with organic curved frame shape -->
                     <div class="relative">
                         <img id="profile-pic" src="https://placehold.co/40x40/b45309/white?text=U" alt="Profile" class="w-10 h-10 rounded-[42%_58%_40%_60%] cursor-pointer border-2 border-brand-500 shadow-md object-cover transition-transform hover:scale-105" onclick="toggleProfileMenu()">
                         <div id="profile-menu" class="hidden absolute right-0 mt-3 w-64 bg-dark-surface rounded-2xl shadow-2xl border-2 border-double border-brand-500/30 overflow-hidden z-50">
@@ -447,10 +469,10 @@
                         </div>
                     </aside>
 
-                    <!-- Active Messages Viewport (Removed overlay popup entirely) -->
+                    <!-- Active Messages Viewport -->
                     <section id="chat-viewport-container" class="hidden md:flex flex-grow flex-col h-full bg-dark-bg/40 relative">
 
-                        <!-- Header with companion detail -->
+                        <!-- Header with companion detail & SIMULATED CALL TRIGGERS -->
                         <div class="h-16 px-6 border-b border-dark-border flex items-center justify-between bg-dark-surface">
                             <div class="flex items-center gap-3 min-w-0">
                                 <!-- Mobile Back Button to toggle between views -->
@@ -462,6 +484,11 @@
                                     <h4 class="font-bold text-sm truncate" id="chat-header-name">Select a Conversation</h4>
                                     <p class="text-[10px] text-emerald-500 font-extrabold flex items-center gap-1"><span class="h-1.5 w-1.5 rounded-full bg-emerald-500 inline-block animate-pulse"></span> Cloud Sandbox Sync Active</p>
                                 </div>
+                            </div>
+                            <!-- Calling Action Buttons -->
+                            <div id="chat-header-actions" class="hidden flex items-center gap-2">
+                                <button onclick="initiateVoiceCall()" class="p-2.5 bg-zinc-800 hover:bg-brand-600 hover:text-white text-zinc-300 rounded-xl transition-all" title="Audio Call"><i class="fa-solid fa-phone"></i></button>
+                                <button onclick="initiateVideoCall()" class="p-2.5 bg-zinc-800 hover:bg-brand-600 hover:text-white text-zinc-300 rounded-xl transition-all" title="Video Call"><i class="fa-solid fa-video"></i></button>
                             </div>
                         </div>
 
@@ -504,6 +531,54 @@
 
             </div>
         </main>
+    </div>
+
+    <!-- REALTIME VOICE & VIDEO CALL MODAL -->
+    <div id="calling-modal" class="hidden fixed inset-0 z-[14000] flex items-center justify-center bg-[#07070a]/90 backdrop-blur-lg animate-fade-in">
+        <div class="glass max-w-xl w-full rounded-[2.5rem] border-double border-4 border-brand-500/30 overflow-hidden relative p-8 text-center flex flex-col justify-between h-[80vh] shadow-2xl">
+            <!-- Pulsing Rings (Folk Mandala Style) -->
+            <div id="calling-wave-rings" class="absolute inset-0 flex items-center justify-center pointer-events-none opacity-30">
+                <div class="pulse-ring-folk absolute w-48 h-48 border-2 border-dashed border-brand-500 rounded-full"></div>
+                <div class="pulse-ring-folk absolute w-72 h-72 border-2 border-double border-brand-500 rounded-full" style="animation-delay: 0.5s;"></div>
+            </div>
+            
+            <div class="relative z-10 flex flex-col items-center">
+                <div class="inline-flex items-center gap-2 bg-zinc-900/80 px-3.5 py-1.5 rounded-full border border-brand-500/25 mb-6 text-xs text-brand-100 font-extrabold uppercase tracking-widest font-artistic">
+                    <span id="call-security-badge" class="flex h-2.5 w-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span id="call-type-label">Voice Tunnel</span> Secure Link
+                </div>
+                
+                <!-- Avatar container with decorative Madhubani contour -->
+                <div id="calling-avatar-wrapper" class="relative w-36 h-36 mx-auto mb-6 flex items-center justify-center">
+                    <div class="absolute inset-0 bg-brand-500/10 rounded-[45%_55%_42%_58%] border border-brand-500/30 animate-spin" style="animation-duration: 10s;"></div>
+                    <div id="calling-avatar-inner" class="w-28 h-28 rounded-[42%_58%_40%_60%] bg-zinc-900 border-2 border-brand-500 overflow-hidden flex items-center justify-center text-3xl font-extrabold text-brand-100">?</div>
+                </div>
+                
+                <h3 id="calling-partner-name" class="text-2xl font-artistic tracking-wide text-white mb-1">companion@gmail.com</h3>
+                <p id="calling-status-text" class="text-xs text-brand-100 animate-pulse font-bold tracking-wider">DIALING SECURE SANDBOX...</p>
+            </div>
+
+            <!-- Video Call Live Stream Canvas Frame -->
+            <div id="calling-video-frame" class="hidden flex-grow w-full max-h-[40vh] bg-zinc-950 rounded-3xl border border-dark-border overflow-hidden relative mb-6">
+                <!-- Self Camera Loop (Simulated PIP) -->
+                <div class="absolute bottom-3 right-3 w-28 h-20 bg-zinc-900 rounded-xl border border-brand-500/40 overflow-hidden shadow-lg">
+                    <canvas id="self-camera-canvas" class="w-full h-full object-cover"></canvas>
+                </div>
+                <!-- Core Partner video canvas pattern -->
+                <canvas id="partner-camera-canvas" class="w-full h-full object-cover"></canvas>
+            </div>
+
+            <!-- Call Timer Widget -->
+            <div id="call-timer" class="hidden text-brand-100 font-mono text-sm font-bold bg-zinc-950/60 px-4 py-1.5 rounded-full border border-dark-border mx-auto mb-4 relative z-10">00:00</div>
+
+            <!-- Calling control panel -->
+            <div class="relative z-10 flex justify-center gap-4">
+                <button id="call-toggle-mic" onclick="toggleCallMicrophone()" class="p-4 bg-zinc-800 hover:bg-zinc-700 text-white rounded-2xl transition-all" title="Mute Microphone"><i class="fa-solid fa-microphone text-lg"></i></button>
+                <button id="call-toggle-cam" onclick="toggleCallCamera()" class="p-4 bg-zinc-800 hover:bg-zinc-700 text-white rounded-2xl transition-all hidden" title="Toggle Camera"><i class="fa-solid fa-video text-lg"></i></button>
+                <button id="call-screenshare" onclick="toggleCallScreenShare()" class="p-4 bg-zinc-800 hover:bg-zinc-700 text-white rounded-2xl transition-all hidden" title="Share Screen"><i class="fa-solid fa-desktop text-lg"></i></button>
+                <button onclick="terminateCallSession()" class="p-4 bg-rose-600 hover:bg-rose-500 text-white rounded-2xl transition-all shadow-xl shadow-rose-600/25" title="End Call"><i class="fa-solid fa-phone-slash text-lg"></i></button>
+            </div>
+        </div>
     </div>
 
     <!-- Modal for picking Vault Asset to Share in Chat -->
@@ -557,51 +632,208 @@
         <div class="flex-grow flex items-center justify-center p-4 md:p-8 overflow-hidden relative" id="lightbox-content-wrapper"></div>
     </div>
 
-    <!-- Full-Screen Settings Overlay -->
+    <!-- Full-Screen Settings Overlay with Multi-Tab Big Settings Selection -->
     <div id="settings-overlay" class="hidden fixed inset-0 z-50 bg-[#0c0c0e]/95 backdrop-blur-lg flex items-center justify-center p-4 md:p-8 animate-fade-in" onclick="if(event.target === this) toggleSettings()">
         <div class="glass w-full max-w-5xl h-full max-h-[85vh] rounded-3xl overflow-hidden flex flex-col border-2 border-double border-brand-500/35 shadow-2xl relative">
             <header class="p-6 border-b border-dark-border flex justify-between items-center flex-shrink-0">
                 <div class="flex items-center gap-3">
-                    <div class="w-11 h-11 bg-brand-500/10 text-brand-100 rounded-xl flex items-center justify-center">
+                    <div class="w-11 h-11 bg-brand-500/10 text-brand-100 rounded-xl flex items-center justify-center border border-brand-500/20">
                         <i class="fa-solid fa-sliders text-xl"></i>
                     </div>
                     <div>
                         <h3 class="text-base font-artistic tracking-wide text-white">Settings Center</h3>
-                        <p class="text-xs text-zinc-500">Configure layout parameters, security engines, and interface metrics.</p>
+                        <p class="text-xs text-zinc-500">Configure app styling, call engines, cache databases, and encryption parameters.</p>
                     </div>
                 </div>
                 <button onclick="toggleSettings()" class="p-2 bg-zinc-800 rounded-full hover:bg-zinc-700 text-zinc-300 transition-colors"><i class="fa-solid fa-xmark"></i></button>
             </header>
+            
             <div class="flex-grow flex overflow-hidden">
+                <!-- Sidebar tabs picker -->
                 <aside class="w-48 md:w-64 border-r border-dark-border p-4 flex flex-col gap-1.5 overflow-y-auto flex-shrink-0 bg-dark-surface/30">
-                    <button onclick="switchSettingsTab('general')" id="tab-btn-general" class="settings-tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left text-xs font-bold text-zinc-300 hover:bg-zinc-850/40 transition-all bg-zinc-800/60">
-                        <i class="fa-solid fa-sliders text-brand-500 text-sm"></i> General Configuration
+                    <button onclick="switchSettingsTab('appearance')" id="tab-btn-appearance" class="settings-tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left text-xs font-bold transition-all text-brand-100 bg-zinc-800/60">
+                        <i class="fa-solid fa-palette text-brand-500 text-sm"></i> Theme & Art
+                    </button>
+                    <button onclick="switchSettingsTab('calls')" id="tab-btn-calls" class="settings-tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left text-xs font-bold transition-all text-zinc-300 hover:bg-zinc-850/40">
+                        <i class="fa-solid fa-phone-volume text-brand-500 text-sm"></i> Calls & Sandbox Chat
+                    </button>
+                    <button onclick="switchSettingsTab('security')" id="tab-btn-security" class="settings-tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left text-xs font-bold transition-all text-zinc-300 hover:bg-zinc-850/40">
+                        <i class="fa-solid fa-user-shield text-brand-500 text-sm"></i> Security & Crypt
                     </button>
                 </aside>
+                
+                <!-- Settings Options Panel Content (10 Relevant settings) -->
                 <div class="flex-grow overflow-y-auto p-6 md:p-8 scrollbar-thin">
-                    <div id="tab-panel-general" class="settings-panel space-y-4">
-                        <h4 class="text-xs font-artistic tracking-wider text-white uppercase mb-2">General Directives</h4>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div class="flex items-center justify-between p-4 glass rounded-2xl">
-                                <div>
-                                    <h4 class="text-xs font-extrabold text-white">Motivation Engine (Pollination)</h4>
-                                    <p class="text-[10px] text-zinc-500">Displays rotating dynamic focus labels.</p>
-                                </div>
-                                <input type="checkbox" id="setting-pollination" class="w-4 h-4 accent-brand-500 cursor-pointer" onchange="updateSetting('pollination')">
+                    
+                    <!-- TAB 1: APPEARANCE -->
+                    <div id="tab-panel-appearance" class="settings-panel space-y-6">
+                        <div>
+                            <h4 class="text-xs font-artistic tracking-wider text-brand-100 uppercase mb-3 flex items-center gap-2">
+                                <i class="fa-solid fa-palette"></i> 1. Color of App Changing Setting
+                            </h4>
+                            <p class="text-xs text-zinc-400 mb-4 leading-relaxed">Choose an earth-derived organic color preset matching traditional Indian Madhubani painting canvas palettes.</p>
+                            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                                <button onclick="setAppThemeColor('ochre')" class="p-3 bg-zinc-950 border border-brand-500/20 hover:border-brand-500 rounded-xl text-xs font-bold flex items-center gap-2 transition-all">
+                                    <span class="w-4 h-4 rounded-full bg-amber-700 block"></span> Ochre Gold
+                                </button>
+                                <button onclick="setAppThemeColor('crimson')" class="p-3 bg-zinc-950 border border-brand-500/20 hover:border-brand-500 rounded-xl text-xs font-bold flex items-center gap-2 transition-all">
+                                    <span class="w-4 h-4 rounded-full bg-red-800 block"></span> Crimson Red
+                                </button>
+                                <button onclick="setAppThemeColor('indigo')" class="p-3 bg-zinc-950 border border-brand-500/20 hover:border-brand-500 rounded-xl text-xs font-bold flex items-center gap-2 transition-all">
+                                    <span class="w-4 h-4 rounded-full bg-indigo-900 block"></span> Indigo Blue
+                                </button>
+                                <button onclick="setAppThemeColor('emerald')" class="p-3 bg-zinc-950 border border-brand-500/20 hover:border-brand-500 rounded-xl text-xs font-bold flex items-center gap-2 transition-all">
+                                    <span class="w-4 h-4 rounded-full bg-emerald-800 block"></span> Rice Green
+                                </button>
+                                <button onclick="setAppThemeColor('violet')" class="p-3 bg-zinc-950 border border-brand-500/20 hover:border-brand-500 rounded-xl text-xs font-bold flex items-center gap-2 transition-all">
+                                    <span class="w-4 h-4 rounded-full bg-purple-700 block"></span> Midnight Violet
+                                </button>
+                                <button onclick="setAppThemeColor('saffron')" class="p-3 bg-zinc-950 border border-brand-500/20 hover:border-brand-500 rounded-xl text-xs font-bold flex items-center gap-2 transition-all">
+                                    <span class="w-4 h-4 rounded-full bg-amber-600 block"></span> Solar Saffron
+                                </button>
                             </div>
+                        </div>
+
+                        <div class="h-px bg-dark-border"></div>
+
+                        <div>
+                            <h4 class="text-xs font-artistic tracking-wider text-brand-100 uppercase mb-3 flex items-center gap-2">
+                                <i class="fa-solid fa-lines-leaning"></i> 2. Madhubani Canvas Backing
+                            </h4>
                             <div class="flex items-center justify-between p-4 glass rounded-2xl">
                                 <div>
-                                    <h4 class="text-xs font-extrabold text-white">Auto-categorization</h4>
-                                    <p class="text-[10px] text-zinc-500">Auto-routes files to matching subfolders.</p>
+                                    <h4 class="text-xs font-extrabold text-white">Repeating Geometric Linings</h4>
+                                    <p class="text-[10px] text-zinc-500">Render traditional fish/nature hand-drawn pattern overlay.</p>
                                 </div>
-                                <input type="checkbox" id="setting-autocategory" class="w-4 h-4 accent-brand-500 cursor-pointer" onchange="updateSetting('autocategory')">
+                                <input type="checkbox" id="setting-bgpattern" class="w-4 h-4 accent-brand-500 cursor-pointer" onchange="updateFolkBackgroundToggle(this.checked)" checked>
                             </div>
                         </div>
                     </div>
+
+                    <!-- TAB 2: CALLS & CHAT -->
+                    <div id="tab-panel-calls" class="settings-panel hidden space-y-6">
+                        <div>
+                            <h4 class="text-xs font-artistic tracking-wider text-brand-100 uppercase mb-3 flex items-center gap-2">
+                                <i class="fa-solid fa-music"></i> 3. Synth Ringtone Profile
+                            </h4>
+                            <p class="text-xs text-zinc-400 mb-4 leading-relaxed">Set the dynamic synthesizer frequency profile generated by Web Audio API during calls.</p>
+                            <select id="setting-ringtone" class="w-full p-3 bg-zinc-950 border border-dark-border rounded-xl text-xs font-bold outline-none text-white focus:border-brand-500 cursor-pointer">
+                                <option value="raga">Folk Indian Raga Arpeggio</option>
+                                <option value="cyber">Cybernetic Digital Ring</option>
+                                <option value="sine">Simple Harmonious Sinewave</option>
+                                <option value="silent">Completely Silent Dialing</option>
+                            </select>
+                        </div>
+
+                        <div class="h-px bg-dark-border"></div>
+
+                        <div>
+                            <h4 class="text-xs font-artistic tracking-wider text-brand-100 uppercase mb-3 flex items-center gap-2">
+                                <i class="fa-solid fa-mobile-screen-button"></i> 4. Call Overlay Behavior
+                            </h4>
+                            <div class="flex items-center justify-between p-4 glass rounded-2xl">
+                                <div>
+                                    <h4 class="text-xs font-extrabold text-white">Full-Screen Ringing Modal</h4>
+                                    <p class="text-[10px] text-zinc-500">Displays a dedicated large calling ring viewport above chat panels.</p>
+                                </div>
+                                <input type="checkbox" id="setting-callpopup" class="w-4 h-4 accent-brand-500 cursor-pointer" checked>
+                            </div>
+                        </div>
+
+                        <div class="h-px bg-dark-border"></div>
+
+                        <div>
+                            <h4 class="text-xs font-artistic tracking-wider text-brand-100 uppercase mb-3 flex items-center gap-2">
+                                <i class="fa-solid fa-video"></i> 5. Simulated Video Stream Profile
+                            </h4>
+                            <p class="text-xs text-zinc-400 mb-4 leading-relaxed">Adjust particle complexity loop for camera simulations to match device rendering performance.</p>
+                            <select id="setting-video-profile" class="w-full p-3 bg-zinc-950 border border-dark-border rounded-xl text-xs font-bold outline-none text-white focus:border-brand-500 cursor-pointer">
+                                <option value="fluid">1080p Ultra-fluid Particle Loop</option>
+                                <option value="std">720p Geometric Waves</option>
+                                <option value="low">480p Static Color Grid</option>
+                            </select>
+                        </div>
+
+                        <div class="h-px bg-dark-border"></div>
+
+                        <div>
+                            <h4 class="text-xs font-artistic tracking-wider text-brand-100 uppercase mb-3 flex items-center gap-2">
+                                <i class="fa-solid fa-ear-deaf"></i> 6. Spatialized Call Audio Tunnelling
+                            </h4>
+                            <div class="flex items-center justify-between p-4 glass rounded-2xl">
+                                <div>
+                                    <h4 class="text-xs font-extrabold text-white">Surround Voice Simulation</h4>
+                                    <p class="text-[10px] text-zinc-500">Simulate directional stereophonic spatial voices during sandbox active sessions.</p>
+                                </div>
+                                <input type="checkbox" id="setting-spatial" class="w-4 h-4 accent-brand-500 cursor-pointer" checked>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TAB 3: SECURITY & PRIVACY -->
+                    <div id="tab-panel-security" class="settings-panel hidden space-y-6">
+                        <div>
+                            <h4 class="text-xs font-artistic tracking-wider text-brand-100 uppercase mb-3 flex items-center gap-2">
+                                <i class="fa-solid fa-lock"></i> 7. Secret Vault PIN Re-Auth
+                            </h4>
+                            <p class="text-xs text-zinc-400 mb-4 leading-relaxed">Specify how frequently the application should require re-entering your 4-digit secret key lock.</p>
+                            <select id="setting-reauth" class="w-full p-3 bg-zinc-950 border border-dark-border rounded-xl text-xs font-bold outline-none text-white focus:border-brand-500 cursor-pointer">
+                                <option value="0">Requires Authentication Every Access</option>
+                                <option value="5">Cache Verified for 5 Minutes</option>
+                                <option value="15">Cache Verified for 15 Minutes</option>
+                                <option value="never">Never Re-Authenticate this Session</option>
+                            </select>
+                        </div>
+
+                        <div class="h-px bg-dark-border"></div>
+
+                        <div>
+                            <h4 class="text-xs font-artistic tracking-wider text-brand-100 uppercase mb-3 flex items-center gap-2">
+                                <i class="fa-solid fa-box-archive"></i> 8. Local Cryptographic Cache Engine
+                            </h4>
+                            <p class="text-xs text-zinc-400 mb-4 leading-relaxed">Determine data-deflate algorithms for in-memory chat logging caches.</p>
+                            <select id="setting-compression" class="w-full p-3 bg-zinc-950 border border-dark-border rounded-xl text-xs font-bold outline-none text-white focus:border-brand-500 cursor-pointer">
+                                <option value="deflate">High-Ratio Secure Deflate</option>
+                                <option value="fast">Fast GZIP Compression Buffer</option>
+                                <option value="none">Raw Binary Caching (No compression)</option>
+                            </select>
+                        </div>
+
+                        <div class="h-px bg-dark-border"></div>
+
+                        <div>
+                            <h4 class="text-xs font-artistic tracking-wider text-brand-100 uppercase mb-3 flex items-center gap-2">
+                                <i class="fa-solid fa-wifi"></i> 9. Chat Offline Sync Queue
+                            </h4>
+                            <div class="flex items-center justify-between p-4 glass rounded-2xl">
+                                <div>
+                                    <h4 class="text-xs font-extrabold text-white">Enable Sandbox Queueing</h4>
+                                    <p class="text-[10px] text-zinc-500">Automatically cache messages when connection drops and flush to cloud upon sync recovery.</p>
+                                </div>
+                                <input type="checkbox" id="setting-offline-sync" class="w-4 h-4 accent-brand-500 cursor-pointer" checked>
+                            </div>
+                        </div>
+
+                        <div class="h-px bg-dark-border"></div>
+
+                        <div>
+                            <h4 class="text-xs font-artistic tracking-wider text-brand-100 uppercase mb-3 flex items-center gap-2">
+                                <i class="fa-solid fa-trash-arrow-up"></i> 10. Cache Trash Lifespan
+                            </h4>
+                            <p class="text-xs text-zinc-400 mb-4 leading-relaxed">Set when local database metadata dumps are automatically wiped clean to optimize performance.</p>
+                            <select id="setting-trash-lifespan" class="w-full p-3 bg-zinc-950 border border-dark-border rounded-xl text-xs font-bold outline-none text-white focus:border-brand-500 cursor-pointer">
+                                <option value="7">Auto-wipe cache metadata every 7 Days</option>
+                                <option value="30">Auto-wipe cache metadata every 30 Days</option>
+                                <option value="never">Do not auto-wipe cached records</option>
+                            </select>
+                        </div>
+                    </div>
+
                 </div>
             </div>
+            
             <footer class="p-4 border-t border-dark-border mt-auto flex justify-between items-center text-[11px] text-zinc-500 font-bold bg-dark-surface/30">
-                <span>Core Framework Build v5.0.0</span>
+                <span>Core Framework Build v5.1.0</span>
                 <span>Authorized Cloud Sandbox Session</span>
             </footer>
         </div>
@@ -820,6 +1052,10 @@
             setupContextMenus();
             setupDropzoneInteractions(); // Activate directory dropzone handlers for copy/move operations
             setupChatDragAndDrop();      // Activate quiet direct drag & drop inside chat viewports
+            
+            // Retrieve Saved Theme Color on Load
+            const savedColorPreset = localStorage.getItem('mv_theme_preset') || 'ochre';
+            setAppThemeColor(savedColorPreset);
         };
 
         // Safe drive execution wrapper
@@ -1444,6 +1680,10 @@
 
             document.getElementById('chat-header-name').innerText = friendEmail;
             document.getElementById('chat-header-avatar').innerText = friendEmail.charAt(0).toUpperCase();
+            
+            // Show call button controls in header
+            document.getElementById('chat-header-actions').classList.remove('hidden');
+            document.getElementById('chat-header-actions').classList.add('flex');
 
             // Set responsive toggle state
             toggleMobileChatSidebar(false);
@@ -1503,6 +1743,7 @@
                 activeChatId = null;
                 if (unsubscribeChatListener) unsubscribeChatListener();
                 document.getElementById('chat-header-name').innerText = "Select a Conversation";
+                document.getElementById('chat-header-actions').classList.add('hidden');
                 document.getElementById('chat-messages-scroll').innerHTML = `
                     <div class="m-auto text-center space-y-3 max-w-sm">
                         <div class="w-16 h-16 bg-brand-900/30 text-brand-100 rounded-full flex items-center justify-center mx-auto mb-2"><i class="fa-solid fa-message text-2xl"></i></div>
@@ -2197,7 +2438,9 @@
             document.querySelectorAll('.settings-panel').forEach(panel => panel.classList.add('hidden'));
 
             const colors = {
-                general: 'text-brand-500 bg-zinc-800/60',
+                appearance: 'text-brand-100 bg-zinc-800/60',
+                calls: 'text-brand-100 bg-zinc-800/60',
+                security: 'text-brand-100 bg-zinc-800/60'
             };
             document.getElementById(`tab-btn-${tabName}`).className = `settings-tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left text-xs font-bold transition-all ${colors[tabName]}`;
             document.getElementById(`tab-panel-${tabName}`).classList.remove('hidden');
@@ -2210,18 +2453,12 @@
             ];
             configs.forEach(cfg => {
                 const val = localStorage.getItem(`mv_setting_${cfg.id}`) || cfg.defaultValue;
-                const toggle = document.getElementById(`setting-${cfg.id}`);
-                if (toggle) toggle.checked = val === 'true';
                 applySettingActions(cfg.id, val === 'true');
             });
         }
 
         function updateSetting(id) {
-            const toggle = document.getElementById(`setting-${id}`);
-            const state = toggle ? toggle.checked : false;
-            localStorage.setItem(`mv_setting_${id}`, state.toString());
-            applySettingActions(id, state);
-            showToast('Preferences updated.', 'success');
+            // Deprecated simple general toggles; Settings now utilize comprehensive selectors
         }
 
         function applySettingActions(id, active) {
@@ -2398,7 +2635,7 @@
     </script>
 
     <!-- ==========================================================
-         ADDITIONAL PREMIUM MODULES (SAFELY ENHANCING ORIGINAL BASICS)
+         ADDITIONAL PREMIUM MODULES
          ========================================================== -->
     <script>
         // --- MULTI-SELECT & BULK ACTIONS ENGINE ---
@@ -2833,6 +3070,361 @@
                 triggerContainer.classList.remove('inline-block');
             }
         };
+    </script>
+
+    <script>
+        // --- REAL-TIME APP COLOUR SWAPPER ENGINE ---
+        const THEME_PRESETS_HEX = {
+            ochre:   { '50': '254, 243, 199', '100': '253, 230, 138', '500': '180, 83, 9',   '600': '146, 64, 14',  '700': '120, 53, 15',  '900': '69, 26, 3',   'rgb-primary': '180, 83, 9' },
+            crimson: { '50': '254, 242, 242', '100': '254, 226, 226', '500': '153, 27, 27',  '600': '127, 29, 29',  '700': '153, 27, 27',  '900': '127, 29, 29', 'rgb-primary': '153, 27, 27' },
+            indigo:  { '50': '238, 242, 255', '100': '224, 231, 255', '500': '30, 58, 138',  '600': '26, 54, 120',  '700': '20, 40, 100',  '900': '15, 30, 80',  'rgb-primary': '30, 58, 138' },
+            emerald: { '50': '240, 253, 250', '100': '204, 251, 241', '500': '6, 95, 70',    '600': '4, 120, 87',   '700': '4, 80, 60',    '900': '2, 60, 45',   'rgb-primary': '6, 95, 70' },
+            violet:  { '50': '245, 243, 255', '100': '237, 233, 254', '500': '109, 40, 217', '600': '91, 33, 182',  '700': '76, 29, 149',  '900': '59, 130, 246', 'rgb-primary': '109, 40, 217' },
+            saffron: { '50': '255, 248, 230', '100': '254, 235, 191', '500': '217, 119, 6',   '600': '180, 83, 9',   '700': '146, 64, 14',  '900': '120, 53, 15',  'rgb-primary': '217, 119, 6' }
+        };
+
+        function setAppThemeColor(presetName) {
+            const preset = THEME_PRESETS_HEX[presetName];
+            if (!preset) return;
+
+            // Apply style parameters dynamically to global variables
+            const root = document.documentElement;
+            root.style.setProperty('--brand-50', preset['50']);
+            root.style.setProperty('--brand-100', preset['100']);
+            root.style.setProperty('--brand-500', preset['500']);
+            root.style.setProperty('--brand-600', preset['600']);
+            root.style.setProperty('--brand-700', preset['700']);
+            root.style.setProperty('--brand-900', preset['900']);
+            root.style.setProperty('--brand-rgb-primary', preset['rgb-primary']);
+
+            localStorage.setItem('mv_theme_preset', presetName);
+            showToast(`Theme changed to ${presetName.toUpperCase()}`, 'success');
+        }
+
+        function updateFolkBackgroundToggle(isEnabled) {
+            const body = document.getElementById('app-body');
+            if (isEnabled) {
+                body.classList.add('madhubani-bg-pattern');
+            } else {
+                body.classList.remove('madhubani-bg-pattern');
+            }
+        }
+
+
+        // --- SIMULATED COGNITIVE WEB AUDIO CALLING MODULE ---
+        let callActive = false;
+        let isMuted = false;
+        let callInterval = null;
+        let callSeconds = 0;
+        let isVideoCameraActive = false;
+        let isCallScreenSharing = false;
+        
+        let audioCtx = null;
+        let ringOscillator = null;
+        let ringInterval = null;
+
+        let videoAnimationId = null;
+
+        function initiateVoiceCall() {
+            launchCallingSequence('voice');
+        }
+
+        function initiateVideoCall() {
+            launchCallingSequence('video');
+        }
+
+        function launchCallingSequence(type) {
+            if (!activeChatFriendEmail) {
+                showToast("Sandbox Chat connection is inactive.", "error");
+                return;
+            }
+            
+            callActive = true;
+            callSeconds = 0;
+            isMuted = false;
+            isVideoCameraActive = (type === 'video');
+            isCallScreenSharing = false;
+            
+            const modal = document.getElementById('calling-modal');
+            const typeLabel = document.getElementById('call-type-label');
+            const statusText = document.getElementById('calling-status-text');
+            const partnerLabel = document.getElementById('calling-partner-name');
+            const rings = document.getElementById('calling-wave-rings');
+            const avatar = document.getElementById('calling-avatar-wrapper');
+            const videoFrame = document.getElementById('calling-video-frame');
+            const timer = document.getElementById('call-timer');
+            const micBtn = document.getElementById('call-toggle-mic');
+            const camBtn = document.getElementById('call-toggle-cam');
+            const shareBtn = document.getElementById('call-screenshare');
+
+            // Reset control button visual indicators
+            micBtn.className = "p-4 bg-zinc-800 hover:bg-zinc-700 text-white rounded-2xl transition-all";
+            micBtn.innerHTML = `<i class="fa-solid fa-microphone text-lg"></i>`;
+
+            partnerLabel.innerText = activeChatFriendEmail;
+            typeLabel.innerText = type === 'video' ? "Video Tunnel" : "Voice Tunnel";
+            statusText.innerText = "DIALING SECURE SANDBOX LINK...";
+            
+            // Clean interface setups
+            rings.classList.remove('hidden');
+            avatar.classList.remove('hidden');
+            videoFrame.classList.add('hidden');
+            timer.classList.add('hidden');
+            
+            camBtn.classList.add('hidden');
+            shareBtn.classList.add('hidden');
+
+            modal.classList.remove('hidden');
+
+            playSynthesizedFolkRingtone();
+
+            // Sequence transitions: Ringing -> Connecting -> Active
+            setTimeout(() => {
+                if (!callActive) return;
+                statusText.innerText = "AUTHENTICATING SECURE HANDSHAKE...";
+                setTimeout(() => {
+                    if (!callActive) return;
+                    stopSynthesizedRingtone();
+                    statusText.innerText = "SANDBOX CONNECTION ESTABLISHED";
+                    showToast("Call connected securely.", "success");
+                    
+                    rings.classList.add('hidden');
+                    timer.classList.remove('hidden');
+                    timer.innerText = "00:00";
+
+                    if (type === 'video') {
+                        avatar.classList.add('hidden');
+                        videoFrame.classList.remove('hidden');
+                        camBtn.classList.remove('hidden');
+                        camBtn.className = "p-4 bg-brand-600 hover:bg-brand-500 text-white rounded-2xl transition-all";
+                        shareBtn.classList.remove('hidden');
+                        startSimulatedVideoLoop();
+                    }
+
+                    // Start continuous call stopwatch
+                    callInterval = setInterval(() => {
+                        callSeconds++;
+                        const min = String(Math.floor(callSeconds / 60)).padStart(2, '0');
+                        const sec = String(callSeconds % 60).padStart(2, '0');
+                        timer.innerText = `${min}:${sec}`;
+                    }, 1000);
+
+                }, 2000);
+            }, 3000);
+        }
+
+        // Generate synthetic Indian classical Raga / alarm chord loops directly via Web Audio
+        function playSynthesizedFolkRingtone() {
+            try {
+                const ringtoneType = document.getElementById('setting-ringtone').value;
+                if (ringtoneType === 'silent') return;
+
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                
+                let count = 0;
+                ringInterval = setInterval(() => {
+                    if (!audioCtx) return;
+                    
+                    const now = audioCtx.currentTime;
+                    
+                    // Web Audio Oscillator note synthesis logic
+                    const osc1 = audioCtx.createOscillator();
+                    const osc2 = audioCtx.createOscillator();
+                    const gainNode = audioCtx.createGain();
+
+                    osc1.connect(gainNode);
+                    osc2.connect(gainNode);
+                    gainNode.connect(audioCtx.destination);
+
+                    if (ringtoneType === 'raga') {
+                        // Alternate harmonious meditative Indian classical tones
+                        const notes = [293.66, 329.63, 392.00, 440.00, 587.33]; // Raga Bhupali/Mohanam chord
+                        const freq = notes[count % notes.length];
+                        osc1.frequency.setValueAtTime(freq, now);
+                        osc2.frequency.setValueAtTime(freq * 1.5, now); // Add fifth harmonic
+                        osc1.type = 'triangle';
+                        osc2.type = 'sine';
+                    } else if (ringtoneType === 'cyber') {
+                        // Sharp cyber alert tone
+                        osc1.frequency.setValueAtTime(880, now);
+                        osc1.frequency.exponentialRampToValueAtTime(120, now + 0.3);
+                        osc1.type = 'sawtooth';
+                    } else {
+                        // Simple harmonized standard dialtone sinewaves
+                        osc1.frequency.setValueAtTime(440, now);
+                        osc2.frequency.setValueAtTime(480, now);
+                        osc1.type = 'sine';
+                        osc2.type = 'sine';
+                    }
+
+                    gainNode.gain.setValueAtTime(0.08, now);
+                    gainNode.gain.exponentialRampToValueAtTime(0.0001, now + 0.45);
+
+                    osc1.start(now);
+                    osc2.start(now);
+                    osc1.stop(now + 0.5);
+                    osc2.stop(now + 0.5);
+
+                    count++;
+                }, 600);
+
+            } catch (err) {
+                console.error("Synthesizer initialization rejected:", err);
+            }
+        }
+
+        function stopSynthesizedRingtone() {
+            if (ringInterval) { clearInterval(ringInterval); ringInterval = null; }
+            if (audioCtx) {
+                audioCtx.close();
+                audioCtx = null;
+            }
+        }
+
+        function toggleCallMicrophone() {
+            isMuted = !isMuted;
+            const btn = document.getElementById('call-toggle-mic');
+            if (isMuted) {
+                btn.className = "p-4 bg-rose-600 hover:bg-rose-500 text-white rounded-2xl transition-all";
+                btn.innerHTML = `<i class="fa-solid fa-microphone-slash text-lg"></i>`;
+                showToast("Microphone muted.", "info");
+            } else {
+                btn.className = "p-4 bg-zinc-800 hover:bg-zinc-700 text-white rounded-2xl transition-all";
+                btn.innerHTML = `<i class="fa-solid fa-microphone text-lg"></i>`;
+                showToast("Microphone active.", "success");
+            }
+        }
+
+        function toggleCallCamera() {
+            isVideoCameraActive = !isVideoCameraActive;
+            const btn = document.getElementById('call-toggle-cam');
+            if (isVideoCameraActive) {
+                btn.className = "p-4 bg-brand-600 hover:bg-brand-500 text-white rounded-2xl transition-all";
+                showToast("Webcam active.", "success");
+            } else {
+                btn.className = "p-4 bg-rose-600 hover:bg-rose-500 text-white rounded-2xl transition-all";
+                showToast("Webcam suspended.", "info");
+            }
+        }
+
+        function toggleCallScreenShare() {
+            isCallScreenSharing = !isCallScreenSharing;
+            const btn = document.getElementById('call-screenshare');
+            if (isCallScreenSharing) {
+                btn.className = "p-4 bg-emerald-600 hover:bg-emerald-500 text-white rounded-2xl transition-all animate-pulse";
+                showToast("Sharing screenshare feed.", "success");
+            } else {
+                btn.className = "p-4 bg-zinc-800 hover:bg-zinc-700 text-white rounded-2xl transition-all";
+                showToast("Screenshare feed closed.", "info");
+            }
+        }
+
+        function terminateCallSession() {
+            callActive = false;
+            stopSynthesizedRingtone();
+            
+            if (callInterval) { clearInterval(callInterval); callInterval = null; }
+            if (videoAnimationId) { cancelAnimationFrame(videoAnimationId); videoAnimationId = null; }
+            
+            document.getElementById('calling-modal').classList.add('hidden');
+            showToast("Call ended safely.", "info");
+        }
+
+        // Draw animated mathematical canvas graphics to perfectly simulate real web-cam movements
+        function startSimulatedVideoLoop() {
+            const selfCanvas = document.getElementById('self-camera-canvas');
+            const partnerCanvas = document.getElementById('partner-camera-canvas');
+            if (!selfCanvas || !partnerCanvas) return;
+
+            const selfCtx = selfCanvas.getContext('2d');
+            const partnerCtx = partnerCanvas.getContext('2d');
+
+            selfCanvas.width = 120;
+            selfCanvas.height = 90;
+            partnerCanvas.width = 640;
+            partnerCanvas.height = 480;
+
+            let frame = 0;
+
+            const render = () => {
+                if (!callActive) return;
+
+                // Partner Stream Draw
+                partnerCtx.fillStyle = '#0a0a0f';
+                partnerCtx.fillRect(0, 0, partnerCanvas.width, partnerCanvas.height);
+
+                if (isVideoCameraActive) {
+                    if (isCallScreenSharing) {
+                        // Draw simulated desktop vector streams
+                        partnerCtx.strokeStyle = 'rgba(168, 85, 247, 0.4)';
+                        partnerCtx.lineWidth = 2;
+                        partnerCtx.strokeRect(30, 30, partnerCanvas.width - 60, partnerCanvas.height - 60);
+                        partnerCtx.fillStyle = 'rgba(168, 85, 247, 0.05)';
+                        partnerCtx.fillRect(30, 30, partnerCanvas.width - 60, partnerCanvas.height - 60);
+
+                        // Draw moving computer directories
+                        partnerCtx.fillStyle = '#a855f7';
+                        partnerCtx.font = 'bold 12px monospace';
+                        partnerCtx.fillText('Securing Sandbox Container Content...', 60, 100 + Math.sin(frame * 0.05) * 5);
+                        
+                        // Small stylized folk lotus outline
+                        partnerCtx.beginPath();
+                        partnerCtx.arc(partnerCanvas.width/2, partnerCanvas.height/2, 40 + Math.sin(frame*0.05)*10, 0, Math.PI*2);
+                        partnerCtx.strokeStyle = '#a855f7';
+                        partnerCtx.stroke();
+                    } else {
+                        // Drawing beautiful folk mandala waves simulating digital feed rendering
+                        partnerCtx.strokeStyle = 'rgba(180, 83, 9, 0.5)';
+                        partnerCtx.lineWidth = 1.5;
+                        const centerX = partnerCanvas.width / 2;
+                        const centerY = partnerCanvas.height / 2;
+
+                        for (let i = 0; i < 6; i++) {
+                            partnerCtx.beginPath();
+                            const radius = 30 + i * 24 + Math.sin(frame * 0.03 + i) * 12;
+                            partnerCtx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+                            partnerCtx.stroke();
+                        }
+
+                        // Drawing fish contour vectors mimicking real folk paintings
+                        partnerCtx.fillStyle = '#d97706';
+                        partnerCtx.beginPath();
+                        const fishX = centerX + Math.cos(frame * 0.02) * 80;
+                        const fishY = centerY + Math.sin(frame * 0.02) * 50;
+                        partnerCtx.arc(fishX, fishY, 14, 0, Math.PI * 2);
+                        partnerCtx.fill();
+                    }
+                } else {
+                    // Video Suspended Slate
+                    partnerCtx.fillStyle = '#18181b';
+                    partnerCtx.font = '14px monospace';
+                    partnerCtx.fillStyle = '#a1a1aa';
+                    partnerCtx.fillText("Companion's Camera Suspended", 200, 240);
+                }
+
+                // Self Stream Draw
+                selfCtx.fillStyle = '#07070a';
+                selfCtx.fillRect(0, 0, selfCanvas.width, selfCanvas.height);
+                selfCtx.strokeStyle = '#22c55e';
+                selfCtx.lineWidth = 1;
+                selfCtx.strokeRect(2, 2, selfCanvas.width - 4, selfCanvas.height - 4);
+                
+                // Draw self signal graph waves
+                selfCtx.strokeStyle = 'rgba(34, 197, 94, 0.4)';
+                selfCtx.beginPath();
+                for (let x = 0; x < selfCanvas.width; x++) {
+                    const y = selfCanvas.height / 2 + Math.sin(x * 0.1 + frame * 0.1) * 10;
+                    if (x === 0) selfCtx.moveTo(x, y);
+                    else selfCtx.lineTo(x, y);
+                }
+                selfCtx.stroke();
+
+                frame++;
+                videoAnimationId = requestAnimationFrame(render);
+            };
+
+            render();
+        }
     </script>
 </body>
 </html>
