@@ -6,7 +6,7 @@
     <title>MyVault Fast | Ultimate Cloud Storage & Chat</title>
     
     <!-- Fonts & Icons -->
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght=300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <!-- PWA Manifest Support -->
@@ -415,15 +415,15 @@
                     </aside>
 
                     <!-- Active Messages Viewport -->
-                <section id="chat-viewport-container" class="hidden md:flex flex-grow flex-col h-full bg-dark-bg/40 relative">
-                    <!-- Drag-and-drop file overlay for chat files -->
-                    <div id="chat-file-dropzone" class="chat-drag-overlay absolute inset-0 z-50 hidden flex-col items-center justify-center border-4 border-dashed border-brand-500 m-4 rounded-3xl p-6 pointer-events-none">
-                        <div class="w-20 h-20 bg-brand-900/30 text-brand-400 rounded-full flex items-center justify-center animate-bounce mb-4"><i class="fa-solid fa-cloud-arrow-up text-4xl"></i></div>
-                        <h3 class="text-xl font-extrabold text-white">Drop to Send Media instantly</h3>
-                        <p class="text-xs text-zinc-500 mt-1">Images, Videos, PDFs, Songs, or Executable binaries</p>
-                    </div>
+                    <section id="chat-viewport-container" class="hidden md:flex flex-grow flex-col h-full bg-dark-bg/40 relative">
+                        <!-- Drag-and-drop file overlay for chat files -->
+                        <div id="chat-file-dropzone" class="chat-drag-overlay absolute inset-0 z-50 hidden flex-col items-center justify-center border-4 border-dashed border-brand-500 m-4 rounded-3xl p-6 pointer-events-none">
+                            <div class="w-20 h-20 bg-brand-900/30 text-brand-400 rounded-full flex items-center justify-center animate-bounce mb-4"><i class="fa-solid fa-cloud-arrow-up text-4xl"></i></div>
+                            <h3 class="text-xl font-extrabold text-white">Drop to Send Media instantly</h3>
+                            <p class="text-xs text-zinc-500 mt-1">Images, Videos, PDFs, Songs, or Executable binaries</p>
+                        </div>
 
-                    <!-- Header with companion detail -->
+                        <!-- Header with companion detail -->
                         <div class="h-16 px-6 border-b border-dark-border flex items-center justify-between bg-dark-surface">
                             <div class="flex items-center gap-3 min-w-0">
                                 <!-- Mobile Back Button to toggle between views -->
@@ -1252,12 +1252,19 @@
             });
         }
 
-        // WhatsApp Style In-App Lightbox Visualizer with Direct Bearer Token Fetching
+        // --- STREAMING_CHUNK: Enhancing lightbox previews and token-based media decryption... ---
+        // WhatsApp Style In-App Lightbox Visualizer with Direct Bearer Token Fetching & Fallback
         async function openInAppPreview(fileId, event) {
             if (event) event.stopPropagation();
-            const file = allFilesCache.find(f => f.id === fileId);
-            if (!file) {
-                showToast("Retrieving file properties from shared container...", "info");
+            
+            // Check cache or dynamically fetch metadata if shared via chat
+            let fileMetadata = allFilesCache.find(f => f.id === fileId);
+            if (!fileMetadata) {
+                try {
+                    fileMetadata = await driveApi(`files/${fileId}?fields=id,name,mimeType,size,createdTime`);
+                } catch (e) {
+                    console.error("Failed to fetch shared file metadata:", e);
+                }
             }
 
             const modal = document.getElementById('lightbox-modal');
@@ -1265,18 +1272,9 @@
             const meta = document.getElementById('lightbox-meta');
             const wrapper = document.getElementById('lightbox-content-wrapper');
 
-            title.innerText = file ? file.name : "Secure Chat Resource";
-            meta.innerText = file ? `${formatBytes(file.size)} • ${new Date(file.createdTime).toLocaleString()}` : "Shared Resource";
-            wrapper.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin text-4xl text-white"></i>`;
-            
-            if (file) {
-                document.getElementById('lightbox-download-btn').onclick = () => window.open(file.webContentLink || file.webViewLink, '_blank');
-                document.getElementById('lightbox-details-btn').onclick = () => openPropertiesModal(file.id);
-                document.getElementById('lightbox-details-btn').style.display = 'block';
-            } else {
-                document.getElementById('lightbox-download-btn').onclick = () => window.open(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media&access_token=${accessToken}`, '_blank');
-                document.getElementById('lightbox-details-btn').style.display = 'none';
-            }
+            title.innerText = fileMetadata ? fileMetadata.name : "Secure Chat Resource";
+            meta.innerText = fileMetadata ? `${formatBytes(fileMetadata.size)} • ${new Date(fileMetadata.createdTime).toLocaleString()}` : "Shared Resource";
+            wrapper.innerHTML = `<div class="text-center space-y-2"><i class="fa-solid fa-circle-notch fa-spin text-4xl text-brand-500"></i><p class="text-xs text-zinc-500">Decrypting File Stream...</p></div>`;
             modal.classList.remove('hidden');
 
             try {
@@ -1288,7 +1286,23 @@
                 const secureBlobUrl = URL.createObjectURL(blob);
                 wrapper.setAttribute('data-active-blob-url', secureBlobUrl);
 
-                const mimeType = file ? file.mimeType : blob.type;
+                // Setup the safe download trigger utilizing local Blob reference to bypass 403 blocks
+                document.getElementById('lightbox-download-btn').onclick = () => {
+                    const activeBlobUrl = wrapper.getAttribute('data-active-blob-url');
+                    if (activeBlobUrl) {
+                        const a = document.createElement('a');
+                        a.href = activeBlobUrl;
+                        a.download = fileMetadata ? fileMetadata.name : "myvault_download";
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                    }
+                };
+
+                document.getElementById('lightbox-details-btn').onclick = () => openPropertiesModal(fileId);
+                document.getElementById('lightbox-details-btn').style.display = fileMetadata ? 'block' : 'none';
+
+                const mimeType = fileMetadata ? fileMetadata.mimeType : blob.type;
 
                 if (mimeType.startsWith('image/')) {
                     wrapper.innerHTML = `<img src="${secureBlobUrl}" class="max-w-full max-h-[70vh] object-contain rounded-2xl shadow-2xl animate-slide-up">`;
@@ -1297,8 +1311,8 @@
                 } else if (mimeType.startsWith('audio/')) {
                     wrapper.innerHTML = `
                         <div class="glass p-8 rounded-3xl max-w-md w-full flex flex-col items-center gap-6 animate-slide-up">
-                            <div class="w-20 h-20 bg-brand-500/10 text-brand-500 rounded-full flex items-center justify-center animate-bounce"><i class="fa-solid fa-music text-3xl"></i></div>
-                            <h4 class="font-extrabold text-sm truncate text-center w-full">${file ? file.name : 'Secure Audio Track'}</h4>
+                            <div class="w-20 h-20 bg-brand-500/10 text-brand-500 rounded-full flex items-center justify-center"><i class="fa-solid fa-music text-3xl animate-pulse"></i></div>
+                            <h4 class="font-extrabold text-sm truncate text-center w-full">${fileMetadata ? fileMetadata.name : 'Secure Audio Track'}</h4>
                             <audio controls class="w-full" src="${secureBlobUrl}" autoplay></audio>
                         </div>`;
                 } else if (mimeType === 'application/pdf') {
@@ -1307,12 +1321,14 @@
                     wrapper.innerHTML = `
                         <div class="glass p-8 rounded-3xl max-w-sm w-full text-center animate-slide-up flex flex-col items-center gap-4">
                             <div class="w-16 h-16 bg-zinc-800 rounded-2xl flex items-center justify-center text-zinc-400"><i class="fa-solid fa-file-shield text-3xl"></i></div>
-                            <h3 class="font-extrabold text-white text-base">${file ? file.name : 'Document File'}</h3>
-                            <button onclick="window.open('https://www.googleapis.com/drive/v3/files/${fileId}?alt=media&access_token=${accessToken}', '_blank')" class="px-6 py-2.5 bg-brand-600 text-xs font-bold rounded-xl text-white">Download Local Copy</button>
+                            <h3 class="font-extrabold text-white text-base">${fileMetadata ? fileMetadata.name : 'Document File'}</h3>
+                            <button id="lightbox-fallback-dl" class="px-6 py-2.5 bg-brand-600 text-xs font-bold rounded-xl text-white">Save Local Copy</button>
                         </div>`;
+                    document.getElementById('lightbox-fallback-dl').onclick = () => document.getElementById('lightbox-download-btn').click();
                 }
             } catch (err) {
-                wrapper.innerHTML = `<div class="text-white text-center"><i class="fa-solid fa-circle-exclamation text-3xl text-rose-500 mb-2"></i><p class="text-sm">Cannot preview securely. Try downloading instead.</p></div>`;
+                console.error("Preview failed:", err);
+                wrapper.innerHTML = `<div class="text-white text-center"><i class="fa-solid fa-circle-exclamation text-3xl text-rose-500 mb-2"></i><p class="text-sm">Cannot preview securely. The format might not be supported natively.</p></div>`;
             }
         }
 
@@ -1327,6 +1343,7 @@
             wrapper.innerHTML = '';
         }
 
+        // --- STREAMING_CHUNK: Setting up real-time chat engines, room handshakes, and Firebase listeners... ---
         // --- REALTIME CHAT ENGINE (FIREBASE FIRESTORE) ---
 
         function startNewChatRoom() {
@@ -1448,6 +1465,7 @@
             }
         }
 
+        // --- STREAMING_CHUNK: Formatting chat bubble components and binding WhatsApp-style message layout rules... ---
         function renderChatMessages(messages) {
             const scroll = document.getElementById('chat-messages-scroll');
             scroll.innerHTML = '';
@@ -1463,7 +1481,25 @@
                 
                 let renderContent = `<p class="text-xs leading-relaxed font-medium break-all select-text">${msg.text}</p>`;
 
-                if (msg.type === 'location') {
+                if (msg.type === 'uploading') {
+                    renderContent = `
+                        <div class="p-3 min-w-[200px] space-y-2 bg-zinc-900 rounded-xl border border-white/5">
+                            <div class="flex justify-between text-[11px] font-bold text-zinc-300">
+                                <span class="truncate max-w-[140px]">${msg.fileName}</span>
+                                <span>${msg.progress || 0}%</span>
+                            </div>
+                            <div class="w-full bg-zinc-800 rounded-full h-1.5 overflow-hidden">
+                                <div class="bg-brand-500 h-full transition-all duration-150" style="width: ${msg.progress || 0}%"></div>
+                            </div>
+                            <p class="text-[9px] text-zinc-500 font-semibold"><i class="fa-solid fa-spinner fa-spin mr-1"></i>Uploading & Encrypting...</p>
+                        </div>`;
+                } else if (msg.type === 'failed') {
+                    renderContent = `
+                        <div class="p-3 min-w-[200px] space-y-1 bg-rose-950/20 rounded-xl border border-rose-900/30 text-rose-400">
+                            <p class="text-xs font-bold flex items-center gap-1.5"><i class="fa-solid fa-circle-xmark"></i> Send Failed</p>
+                            <p class="text-[10px] truncate opacity-80">${msg.fileName}</p>
+                        </div>`;
+                } else if (msg.type === 'location') {
                     renderContent = `
                         <div class="p-1 space-y-2">
                             <div class="h-24 bg-zinc-900 rounded-lg flex items-center justify-center text-rose-500 overflow-hidden relative">
@@ -1478,10 +1514,9 @@
                     const uniqueId = `img-inline-${msg.id}`;
                     renderContent = `
                         <div class="p-0.5 max-w-[240px] flex flex-col gap-1.5">
-                            <img id="${uniqueId}" src="https://placehold.co/240x160/16181f/71717a?text=Loading..." class="rounded-lg object-cover max-h-40 cursor-pointer w-full hover:opacity-90" onclick="openInAppPreview('${msg.fileId}')">
+                            <img id="${uniqueId}" src="https://placehold.co/240x160/16181f/71717a?text=Decrypting..." class="rounded-lg object-cover max-h-40 cursor-pointer w-full hover:opacity-90" onclick="openInAppPreview('${msg.fileId}')">
                             <p class="text-[10px] opacity-75 font-bold truncate">${msg.text || msg.fileName || 'Image'}</p>
                         </div>`;
-                    // Asynchronously fetch and render using our OAuth token to prevent 403 API blocked error
                     loadSecureMediaIntoChatImage(uniqueId, msg.fileId);
                 } else if (msg.type === 'audio') {
                     const uniqueId = `audio-inline-${msg.id}`;
@@ -1547,6 +1582,8 @@
                 if (el) el.src = localUrl;
             } catch (err) {
                 console.error("Inline preview error:", err);
+                const el = document.getElementById(elementId);
+                if (el) el.src = "https://placehold.co/240x160/16181f/71717a?text=Preview+Blocked";
             }
         }
 
@@ -1594,10 +1631,6 @@
             } catch (err) {
                 console.error("Inline video loader error:", err);
             }
-        }
-
-        function openChatMediaBypass(fileName, mediaUrl, type = 'image') {
-            // Deprecated URL-based preview handler. Lightbox now uses openInAppPreview(fileId) automatically.
         }
 
         function toggleChatAttachmentDropdown(event) {
@@ -1675,67 +1708,117 @@
             }
         }
 
-        function triggerDirectChatUpload() {
+        // --- STREAMING_CHUNK: Integrating WhatsApp-style simultaneous file upload and send mechanics... ---
+        // Processes direct chat uploads dynamically, mirroring WhatsApp's upload-while-rendering design
+        async function triggerDirectChatUpload() {
             const input = document.createElement('input');
             input.type = 'file';
             input.onchange = async (e) => {
                 const file = e.target.files[0];
                 if (!file) return;
-
-                const progressWrapper = document.getElementById('chat-inline-progress');
-                const filenameLabel = document.getElementById('chat-progress-filename');
-                const pctLabel = document.getElementById('chat-progress-pct');
-                const bar = document.getElementById('chat-progress-bar');
-
-                filenameLabel.innerText = `Uploading: ${file.name}`;
-                progressWrapper.classList.remove('hidden');
-                pctLabel.innerText = "0%";
-                bar.style.width = "0%";
-                
-                try {
-                    const destFolderId = vaultFolderId;
-                    const metadata = { name: file.name, parents: [destFolderId] };
-                    
-                    const initRes = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable', {
-                        method: 'POST',
-                        headers: {
-                            'Authorization': `Bearer ${accessToken}`,
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify(metadata)
-                    });
-                    if (!initRes.ok) throw new Error('Resumable error');
-                    const locationUrl = initRes.headers.get('Location');
-
-                    const xhr = new XMLHttpRequest();
-                    xhr.open('PUT', locationUrl, true);
-                    xhr.upload.onprogress = (event) => {
-                        if (event.lengthComputable) {
-                            const pct = Math.round((event.loaded / event.total) * 100);
-                            bar.style.width = `${pct}%`;
-                            pctLabel.innerText = `${pct}%`;
-                        }
-                    };
-                    
-                    xhr.onload = async () => {
-                        progressWrapper.classList.add('hidden');
-                        if (xhr.status >= 200 && xhr.status < 300) {
-                            const resp = JSON.parse(xhr.responseText);
-                            await executeVaultShareHandshake(resp.id);
-                            await fetchAllFilesRecursive();
-                            fastFilterCurrentDirectory();
-                        } else {
-                            showToast("Media upload failed", "error");
-                        }
-                    };
-                    xhr.send(file);
-                } catch (err) {
-                    progressWrapper.classList.add('hidden');
-                    console.error(err);
-                    showToast("Failed to upload asset.", "error");
-                }
+                await processDirectChatSend(file);
             };
             input.click();
+        }
+
+        async function processDirectChatSend(file) {
+            if (!activeChatId) {
+                showToast("Please enter a secure chat lobby first.", "error");
+                return;
+            }
+
+            // 1. Immediately insert a placeholder message to Firestore (blink sent)
+            let tempDocRef;
+            try {
+                tempDocRef = await db.collection('chats').doc(activeChatId).collection('messages').add({
+                    sender: userProfile.email.toLowerCase(),
+                    text: `Uploading: ${file.name}...`,
+                    type: 'uploading',
+                    fileName: file.name,
+                    fileSize: file.size,
+                    progress: 0,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                });
+            } catch (err) {
+                console.error("Failed to construct instant chat placeholder:", err);
+                showToast("Connection failed.", "error");
+                return;
+            }
+
+            // 2. Perform resumable, secure Google Drive upload in the background
+            try {
+                const metadata = { name: file.name, parents: [vaultFolderId] };
+                const initRes = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(metadata)
+                });
+                if (!initRes.ok) throw new Error('Resumable error');
+                const locationUrl = initRes.headers.get('Location');
+
+                const xhr = new XMLHttpRequest();
+                xhr.open('PUT', locationUrl, true);
+                
+                // Track progress and update the Firestore placeholder in real-time
+                xhr.upload.onprogress = (event) => {
+                    if (event.lengthComputable) {
+                        const pct = Math.round((event.loaded / event.total) * 100);
+                        tempDocRef.update({ progress: pct });
+                    }
+                };
+                
+                xhr.onload = async () => {
+                    if (xhr.status >= 200 && xhr.status < 300) {
+                        const resp = JSON.parse(xhr.responseText);
+                        
+                        // Set standard readable permission for shared files
+                        try {
+                            await driveApi(`files/${resp.id}/permissions`, 'POST', {
+                                role: 'reader',
+                                type: 'anyone'
+                            });
+                        } catch (permError) {
+                            console.error("Shared folder permissioning bypass failed:", permError);
+                        }
+
+                        let type = 'pdf';
+                        if (file.type.startsWith('image/')) type = 'image';
+                        else if (file.type.startsWith('video/')) type = 'video';
+                        else if (file.type.startsWith('audio/')) type = 'audio';
+                        else if (file.name.endsWith('.apk') || file.name.endsWith('.exe')) type = 'app';
+
+                        // Transition placeholder to the decrypted media card
+                        await tempDocRef.update({
+                            text: `Sent ${file.name}`,
+                            type: type,
+                            fileId: resp.id,
+                            fileName: file.name,
+                            fileSize: file.size,
+                            progress: null // Clears progress indicator state
+                        });
+
+                        // Re-cache files
+                        await fetchAllFilesRecursive();
+                        fastFilterCurrentDirectory();
+                    } else {
+                        throw new Error('Upload rejected');
+                    }
+                };
+
+                xhr.onerror = async () => {
+                    await tempDocRef.update({ type: 'failed', text: `Failed: ${file.name}`, progress: null });
+                };
+
+                xhr.send(file);
+            } catch (err) {
+                console.error("Resumable stream crashed:", err);
+                if (tempDocRef) {
+                    await tempDocRef.update({ type: 'failed', text: `Failed: ${file.name}`, progress: null });
+                }
+            }
         }
 
         function setupChatDragAndDrop() {
@@ -1746,24 +1829,20 @@
             chatContainer.addEventListener('dragenter', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                // Ensure we are dragging a real system file, not an HTML element card
                 if (e.dataTransfer.types.includes('Files')) {
                     dropzoneOverlay.style.display = 'flex';
                 }
             });
 
-            // Keep the overlay up while dragging
             chatContainer.addEventListener('dragover', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
             });
 
-            // Hide overlay when leaving viewport
             chatContainer.addEventListener('dragleave', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
                 const rect = chatContainer.getBoundingClientRect();
-                // Check if the pointer actually left the container boundary
                 if (e.clientX <= rect.left || e.clientX >= rect.right || e.clientY <= rect.top || e.clientY >= rect.bottom) {
                     dropzoneOverlay.style.display = 'none';
                 }
@@ -1777,57 +1856,7 @@
                 if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
                     const file = e.dataTransfer.files[0];
                     showToast(`Simultaneous uploading: ${file.name}`, 'info');
-
-                    const progressWrapper = document.getElementById('chat-inline-progress');
-                    const filenameLabel = document.getElementById('chat-progress-filename');
-                    const pctLabel = document.getElementById('chat-progress-pct');
-                    const bar = document.getElementById('chat-progress-bar');
-
-                    filenameLabel.innerText = `Uploading: ${file.name}`;
-                    progressWrapper.classList.remove('hidden');
-                    pctLabel.innerText = "0%";
-                    bar.style.width = "0%";
-
-                    try {
-                        const metadata = { name: file.name, parents: [vaultFolderId] };
-                        const initRes = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable', {
-                            method: 'POST',
-                            headers: {
-                                'Authorization': `Bearer ${accessToken}`,
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify(metadata)
-                        });
-                        if (!initRes.ok) throw new Error('Resumable connection rejected');
-                        const locationUrl = initRes.headers.get('Location');
-
-                        const xhr = new XMLHttpRequest();
-                        xhr.open('PUT', locationUrl, true);
-                        xhr.upload.onprogress = (progressEvent) => {
-                            if (progressEvent.lengthComputable) {
-                                const pct = Math.round((progressEvent.loaded / progressEvent.total) * 100);
-                                bar.style.width = `${pct}%`;
-                                pctLabel.innerText = `${pct}%`;
-                            }
-                        };
-
-                        xhr.onload = async () => {
-                            progressWrapper.classList.add('hidden');
-                            if (xhr.status >= 200 && xhr.status < 300) {
-                                const resp = JSON.parse(xhr.responseText);
-                                await executeVaultShareHandshake(resp.id);
-                                await fetchAllFilesRecursive();
-                                fastFilterCurrentDirectory();
-                            } else {
-                                showToast("Simultaneous media dispatch failed.", "error");
-                            }
-                        };
-                        xhr.send(file);
-                    } catch (err) {
-                        progressWrapper.classList.add('hidden');
-                        console.error("Direct send failed:", err);
-                        showToast("Media dispatch failure.", "error");
-                    }
+                    await processDirectChatSend(file);
                 }
             });
         }
@@ -1946,6 +1975,7 @@
             input.focus();
         }
 
+        // --- STREAMING_CHUNK: Managing folder mutations, file operations, and deletion handshakes... ---
         function closeRenameModal() {
             document.getElementById('rename-modal').classList.add('hidden');
             renameItemTarget = null;
