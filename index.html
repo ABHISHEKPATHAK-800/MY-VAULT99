@@ -1816,7 +1816,7 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ name: nextName })
                 });
-                displayToast(`Relabel complete!`, 'success');
+                displayToast(`Rename complete!`, 'success');
                 triggerSynthesizerChime(1100, 0.08);
                 await synchronizeFullDriveIndex();
             } catch (e) {
@@ -2693,6 +2693,7 @@
             return 'document';
         }
 
+        // Securely escape HTML characters to prevent XSS injection issues in live chat
         function escapeHtml(text) {
             const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
             return text.replace(/[&<>"']/g, function(m) { return map[m]; });
