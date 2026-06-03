@@ -415,15 +415,15 @@
                     </aside>
 
                     <!-- Active Messages Viewport -->
-                    <section id="chat-viewport-container" class="hidden md:flex flex-grow flex-col h-full bg-dark-bg/40 relative">
-                        <!-- Drag-and-drop file overlay for chat files -->
-                        <div id="chat-file-dropzone" class="chat-drag-overlay absolute inset-0 z-50 flex flex-col items-center justify-center border-4 border-dashed border-brand-500 m-4 rounded-3xl p-6 pointer-events-none">
-                            <div class="w-20 h-20 bg-brand-900/30 text-brand-400 rounded-full flex items-center justify-center animate-bounce mb-4"><i class="fa-solid fa-cloud-arrow-up text-4xl"></i></div>
-                            <h3 class="text-xl font-extrabold text-white">Drop to Send Media instantly</h3>
-                            <p class="text-xs text-zinc-500 mt-1">Images, Videos, PDFs, Songs, or Executable binaries</p>
-                        </div>
+                <section id="chat-viewport-container" class="hidden md:flex flex-grow flex-col h-full bg-dark-bg/40 relative">
+                    <!-- Drag-and-drop file overlay for chat files -->
+                    <div id="chat-file-dropzone" class="chat-drag-overlay absolute inset-0 z-50 hidden flex-col items-center justify-center border-4 border-dashed border-brand-500 m-4 rounded-3xl p-6 pointer-events-none">
+                        <div class="w-20 h-20 bg-brand-900/30 text-brand-400 rounded-full flex items-center justify-center animate-bounce mb-4"><i class="fa-solid fa-cloud-arrow-up text-4xl"></i></div>
+                        <h3 class="text-xl font-extrabold text-white">Drop to Send Media instantly</h3>
+                        <p class="text-xs text-zinc-500 mt-1">Images, Videos, PDFs, Songs, or Executable binaries</p>
+                    </div>
 
-                        <!-- Header with companion detail -->
+                    <!-- Header with companion detail -->
                         <div class="h-16 px-6 border-b border-dark-border flex items-center justify-between bg-dark-surface">
                             <div class="flex items-center gap-3 min-w-0">
                                 <!-- Mobile Back Button to toggle between views -->
