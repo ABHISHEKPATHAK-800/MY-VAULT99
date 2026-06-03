@@ -5,20 +5,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MyVault Fast | Ultimate Cloud Storage & Chat</title>
     
+    <!-- Fonts & Icons -->
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
+    <!-- PWA Manifest Support -->
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#8b5cf6">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="apple-touch-icon" href="logo.png">
 
+    <!-- Google Identity Services -->
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     
+    <!-- Firebase Compat SDKs -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
     
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
     <script>
@@ -113,17 +118,17 @@
             cursor: grabbing;
         }
 
-        /* Full Screen Chat Drag & Drop Overlay overlay - FIXED POINTER INTERRUPTS */
+        /* Full Screen Chat Drag & Drop Overlay overlay */
         .chat-drag-overlay {
             display: none;
             background: rgba(11, 12, 16, 0.85);
             backdrop-filter: blur(8px);
-            pointer-events: none !important;
         }
     </style>
 </head>
 <body class="bg-dark-bg text-zinc-100 transition-colors duration-200 overflow-hidden min-h-screen">
 
+    <!-- Login View -->
     <div id="login-view" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-dark-bg/90 backdrop-blur-md animate-fade-in">
         <div class="glass max-w-lg w-full rounded-3xl shadow-2xl p-8 border border-white/5 relative overflow-hidden flex flex-col justify-between">
             <div class="absolute -top-16 -right-16 w-36 h-36 bg-brand-500/10 rounded-full blur-2xl"></div>
@@ -153,8 +158,10 @@
         </div>
     </div>
 
+    <!-- App Main Dashboard View -->
     <div id="app-view" class="hidden h-screen flex flex-col md:flex-row w-full animate-fade-in overflow-hidden relative">
         
+        <!-- Sidebar Navigation -->
         <aside class="w-full md:w-72 md:h-full border-b md:border-r border-dark-border bg-dark-surface flex flex-col transition-all duration-200 z-10 flex-shrink-0">
             <div class="p-6 flex items-center justify-between border-b border-dark-border">
                 <div class="flex items-center gap-3">
@@ -170,6 +177,7 @@
                     <span class="text-xs font-semibold px-2.5 py-0.5 bg-zinc-800 rounded-full text-zinc-300 badge-counter" id="badge-root">0</span>
                 </button>
                 
+                <!-- Live Chat Button -->
                 <button onclick="navigateTo('chat')" id="nav-chat" class="nav-btn w-full flex items-center justify-between px-4 py-3 rounded-xl text-left text-sm font-bold text-zinc-300 hover:bg-zinc-800/40 transition-all">
                     <span class="flex items-center gap-3"><i class="fa-solid fa-comments w-5 text-fuchsia-500"></i> Live Chat</span>
                     <span class="text-xs font-semibold px-2 py-0.5 bg-fuchsia-950/40 rounded-full text-fuchsia-500 animate-pulse" id="badge-chat">Live</span>
@@ -204,6 +212,7 @@
                         <i class="fa-solid fa-lock text-xs opacity-60"></i>
                     </button>
 
+                    <!-- Subtle Legal & Session Footer -->
                     <div class="border-t border-dark-border/40 pt-4 px-1 pb-1 flex flex-col gap-2.5">
                         <div class="flex items-center justify-between text-[10px] text-zinc-500 font-semibold tracking-wide">
                             <button onclick="openLegalModal('privacy')" class="hover:text-white transition-all">Privacy Policy</button>
@@ -220,10 +229,13 @@
             </nav>
         </aside>
 
+        <!-- Main Content Area -->
         <main class="flex-1 flex flex-col h-full overflow-hidden relative">
             
+            <!-- Top Header Controls -->
             <header class="h-20 px-6 flex items-center justify-between bg-[#0b0c10] border-b border-dark-border flex-shrink-0 z-10">
                 <div class="flex items-center gap-4">
+                    <!-- Custom Arrow Indicators matching original design -->
                     <div class="hidden md:flex items-center gap-2">
                         <i class="fa-solid fa-arrow-left text-zinc-500 hover:text-white cursor-pointer transition-colors" onclick="history.back()"></i>
                         <i class="fa-solid fa-arrow-right text-zinc-500 hover:text-white cursor-pointer transition-colors" onclick="history.forward()"></i>
@@ -235,11 +247,13 @@
                 </div>
                 
                 <div class="flex items-center gap-3">
+                    <!-- Global Search Box -->
                     <div class="relative hidden md:block bg-zinc-900 rounded-full border border-dark-border transition-all">
                         <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-500 text-sm"></i>
                         <input type="text" id="search-input" placeholder="Search files, tags..." class="pl-10 pr-4 py-2 bg-transparent text-zinc-100 outline-none text-sm w-48 lg:w-64 transition-all">
                     </div>
                     
+                    <!-- Utility icons -->
                     <button onclick="toggleTheme()" class="p-2.5 rounded-xl hover:bg-zinc-800 text-zinc-400 transition-colors" title="Toggle Light/Dark Theme">
                         <i class="fa-solid fa-moon text-lg" id="theme-icon"></i>
                     </button>
@@ -247,6 +261,7 @@
                         <i class="fa-solid fa-sliders text-lg"></i>
                     </button>
                     
+                    <!-- Profile menu -->
                     <div class="relative">
                         <img id="profile-pic" src="https://placehold.co/40x40/8b5cf6/white?text=U" alt="Profile" class="w-10 h-10 rounded-full cursor-pointer border-2 border-brand-500 shadow-md object-cover transition-transform hover:scale-105" onclick="toggleProfileMenu()">
                         <div id="profile-menu" class="hidden absolute right-0 mt-3 w-64 bg-dark-surface rounded-2xl shadow-2xl border border-dark-border overflow-hidden z-50">
@@ -265,9 +280,12 @@
                 </div>
             </header>
 
+            <!-- Dashboard Dynamic Area -->
             <div id="main-scroll-area" class="flex-grow overflow-y-auto p-4 md:p-8 scrollbar-thin">
                 
+                <!-- STANDARD STORAGE DASHBOARD WRAPPER -->
                 <div id="dashboard-wrapper" class="space-y-6">
+                    <!-- Action Controls and breadcrumbs -->
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
                         <div class="flex items-center text-sm font-semibold text-zinc-400">
                             <button onclick="navigateTo('root')" class="hover:text-brand-500 transition-colors">MyVault</button>
@@ -282,6 +300,7 @@
                     </div>
 
                     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-8">
+                        <!-- Drag & Drop Upload Panel -->
                         <div class="lg:col-span-8 group relative overflow-hidden bg-dark-card rounded-3xl p-8 border border-dashed border-brand-500/40 hover:border-brand-500 transition-all duration-200 flex flex-col items-center justify-center text-center cursor-pointer" id="upload-dropzone" onclick="document.getElementById('file-input').click()">
                             <input type="file" id="file-input" class="hidden" multiple>
                             
@@ -291,6 +310,7 @@
                             <h3 class="font-extrabold text-lg text-white mb-1">Upload files securely</h3>
                             <p class="text-xs text-zinc-400 max-w-sm mb-4">Drag and drop files here, or browse from your device (Max 1 GB per file)</p>
                             
+                            <!-- Uploading progress stats -->
                             <div id="upload-progress-card" class="hidden w-full max-w-md bg-zinc-900/90 p-4 rounded-xl shadow-lg border border-dark-border mt-2 animate-slide-up">
                                 <div class="flex justify-between text-xs mb-1.5 font-bold">
                                     <span id="upload-filename" class="text-zinc-300 truncate max-w-[200px]">Uploading...</span>
@@ -302,6 +322,7 @@
                             </div>
                         </div>
 
+                        <!-- Cloud Footprint Panel -->
                         <div class="lg:col-span-4 bg-dark-card border border-dark-border rounded-3xl p-6 flex flex-col justify-between">
                             <div>
                                 <h3 class="font-extrabold text-sm mb-4 flex items-center gap-2 uppercase tracking-wider text-zinc-400"><i class="fa-solid fa-chart-pie text-brand-500"></i> Cloud Footprint</h3>
@@ -327,14 +348,18 @@
                         </div>
                     </div>
 
+                    <!-- Folders Navigation Section -->
                     <div id="folders-section" class="mb-10 animate-fade-in">
                         <div class="flex items-center justify-between mb-4">
                             <h3 class="text-base font-extrabold text-white flex items-center gap-2"><i class="fa-solid fa-folder text-brand-500"></i> Vault Folders</h3>
                         </div>
+                        <!-- Folder Drag/Drop targets in the Folder Grid as well! -->
                         <div id="folders-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-                            </div>
+                            <!-- Instantiated Dynamically via renderFoldersGrid() -->
+                        </div>
                     </div>
 
+                    <!-- File Directory Layout -->
                     <div class="animate-fade-in">
                         <div class="flex items-center justify-between mb-4 border-b border-dark-border pb-3">
                             <h3 class="text-base font-extrabold text-white flex items-center gap-2">
@@ -353,8 +378,10 @@
                         </div>
                         
                         <div id="file-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-                            </div>
+                            <!-- Instantiated Dynamically -->
+                        </div>
                         
+                        <!-- Empty Folder Indicator -->
                         <div id="empty-state" class="hidden py-24 text-center max-w-sm mx-auto flex flex-col items-center justify-center gap-4 animate-slide-up">
                             <div class="w-16 h-16 bg-zinc-900 rounded-full flex items-center justify-center text-zinc-500 text-2xl border border-dark-border"><i class="fa-solid fa-folder-open"></i></div>
                             <div>
@@ -365,8 +392,10 @@
                     </div>
                 </div>
 
+                <!-- REALTIME CHAT ENGINE WORKSPACE -->
                 <div id="chat-view-container" class="hidden h-full flex flex-row w-full bg-[#0b0c10] border border-dark-border rounded-3xl overflow-hidden animate-fade-in">
                     
+                    <!-- Contacts / Rooms Sidebar -->
                     <aside id="chat-sidebar-container" class="w-full md:w-80 h-full border-r border-dark-border bg-dark-surface flex flex-col flex-shrink-0 z-10">
                         <div class="p-4 border-b border-dark-border flex flex-col gap-3">
                             <h3 class="font-extrabold text-white text-sm flex items-center gap-2 uppercase tracking-wider"><i class="fa-solid fa-comments text-fuchsia-500"></i> Active Sandboxes</h3>
@@ -379,19 +408,25 @@
                             </button>
                         </div>
                         
+                        <!-- List of friends -->
                         <div id="chats-list" class="flex-grow overflow-y-auto p-2 space-y-1.5 scrollbar-thin">
-                            </div>
+                            <!-- Populated Dynamically -->
+                        </div>
                     </aside>
 
+                    <!-- Active Messages Viewport -->
                     <section id="chat-viewport-container" class="hidden md:flex flex-grow flex-col h-full bg-dark-bg/40 relative">
-                        <div id="chat-file-dropzone" class="chat-drag-overlay absolute inset-0 z-50 flex flex-col items-center justify-center border-4 border-dashed border-brand-500 m-4 rounded-3xl p-6">
+                        <!-- Drag-and-drop file overlay for chat files -->
+                        <div id="chat-file-dropzone" class="chat-drag-overlay absolute inset-0 z-50 flex flex-col items-center justify-center border-4 border-dashed border-brand-500 m-4 rounded-3xl p-6 pointer-events-none">
                             <div class="w-20 h-20 bg-brand-900/30 text-brand-400 rounded-full flex items-center justify-center animate-bounce mb-4"><i class="fa-solid fa-cloud-arrow-up text-4xl"></i></div>
                             <h3 class="text-xl font-extrabold text-white">Drop to Send Media instantly</h3>
                             <p class="text-xs text-zinc-500 mt-1">Images, Videos, PDFs, Songs, or Executable binaries</p>
                         </div>
 
+                        <!-- Header with companion detail -->
                         <div class="h-16 px-6 border-b border-dark-border flex items-center justify-between bg-dark-surface">
                             <div class="flex items-center gap-3 min-w-0">
+                                <!-- Mobile Back Button to toggle between views -->
                                 <button onclick="toggleMobileChatSidebar(true)" class="md:hidden text-zinc-400 hover:text-white mr-2">
                                     <i class="fa-solid fa-arrow-left text-lg"></i>
                                 </button>
@@ -401,9 +436,21 @@
                                     <p class="text-[10px] text-emerald-500 font-extrabold flex items-center gap-1"><span class="h-1.5 w-1.5 rounded-full bg-emerald-500 inline-block animate-pulse"></span> Cloud Sandbox Sync Active</p>
                                 </div>
                             </div>
+                            
+                            <!-- CALL CONTROL PANEL (NEW INTEGRATION) -->
+                            <div class="flex items-center gap-1.5" id="chat-header-actions" style="display: none;">
+                                <button onclick="initiateCall('audio')" class="p-2.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-emerald-400 rounded-xl transition-all" title="Secure Audio Call">
+                                    <i class="fa-solid fa-phone text-sm"></i>
+                                </button>
+                                <button onclick="initiateCall('video')" class="p-2.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-brand-400 rounded-xl transition-all" title="Secure Video Call">
+                                    <i class="fa-solid fa-video text-sm"></i>
+                                </button>
+                            </div>
                         </div>
 
+                        <!-- Chat Messages Screen Scroll area -->
                         <div id="chat-messages-scroll" class="flex-grow overflow-y-auto p-6 space-y-4 scrollbar-thin flex flex-col">
+                            <!-- Populated Dynamically -->
                             <div class="m-auto text-center space-y-3 max-w-sm animate-slide-up">
                                 <div class="w-16 h-16 bg-brand-900/30 text-brand-400 rounded-full flex items-center justify-center mx-auto mb-2"><i class="fa-solid fa-message text-2xl"></i></div>
                                 <h3 class="font-extrabold text-white">Real-Time Cloud Messaging</h3>
@@ -411,6 +458,7 @@
                             </div>
                         </div>
 
+                        <!-- Inline Upload Progress Indicator for Chat -->
                         <div id="chat-inline-progress" class="hidden mx-6 p-3 bg-zinc-900 border border-dark-border rounded-xl animate-slide-up flex flex-col gap-1.5">
                             <div class="flex justify-between text-[11px] font-bold text-zinc-400">
                                 <span id="chat-progress-filename" class="truncate max-w-[250px]">Uploading media...</span>
@@ -421,12 +469,14 @@
                             </div>
                         </div>
 
+                        <!-- Attachment Options Float Bubble -->
                         <div id="chat-attach-dropdown" class="hidden absolute bottom-20 left-6 glass rounded-2xl p-2 shadow-2xl border border-dark-border z-50 flex flex-col gap-1 min-w-[180px] animate-slide-up">
                             <button onclick="openShareVaultAssetModal()" class="w-full flex items-center gap-3 px-3.5 py-2 rounded-xl text-left text-xs font-semibold hover:bg-zinc-800 transition-colors"><i class="fa-solid fa-folder-open text-brand-500"></i> Share Vault Asset</button>
                             <button onclick="triggerDirectChatUpload()" class="w-full flex items-center gap-3 px-3.5 py-2 rounded-xl text-left text-xs font-semibold hover:bg-zinc-800 transition-colors"><i class="fa-solid fa-cloud-arrow-up text-accent-blue"></i> Upload & Send File</button>
                             <button onclick="shareLiveGeolocation()" class="w-full flex items-center gap-3 px-3.5 py-2 rounded-xl text-left text-xs font-semibold hover:bg-zinc-800 transition-colors"><i class="fa-solid fa-location-dot text-accent-rose"></i> Share Location</button>
                         </div>
 
+                        <!-- Message Input Panel -->
                         <div class="p-4 bg-dark-surface border-t border-dark-border flex items-center gap-3">
                             <button onclick="toggleChatAttachmentDropdown(event)" class="p-3 bg-zinc-800 hover:bg-zinc-700 rounded-2xl text-zinc-300 transition-colors relative"><i class="fa-solid fa-paperclip text-lg"></i></button>
                             <input type="text" id="chat-message-input" placeholder="Type a message..." class="flex-grow px-4 py-3 bg-zinc-900 border border-dark-border rounded-2xl text-sm outline-none focus:border-brand-500 text-white font-semibold" onkeydown="if(event.key === 'Enter') sendChatMessage()">
@@ -439,17 +489,109 @@
         </main>
     </div>
 
+    <!-- P2P SECURE CALLING ENGINE INTERFACE OVERLAYS -->
+    <!-- Full-Screen Interactive Calling Viewport -->
+    <div id="call-overlay" class="hidden fixed inset-0 z-[15000] bg-dark-bg/95 backdrop-blur-xl flex flex-col justify-between p-6 animate-fade-in text-white">
+        <!-- Overlay Header Status -->
+        <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full bg-brand-500/10 text-brand-400 flex items-center justify-center font-bold text-sm" id="call-partner-avatar">?</div>
+                <div>
+                    <h4 class="font-extrabold text-sm" id="call-partner-name">Establishing Sync...</h4>
+                    <p class="text-[10px] text-zinc-500 font-semibold" id="call-status-label">Establishing secure P2P feed...</p>
+                </div>
+            </div>
+            <!-- Call Parameter Indicator -->
+            <span class="text-xs bg-brand-900/40 text-brand-400 px-3 py-1.5 rounded-full font-bold uppercase tracking-widest" id="call-type-badge">Call Feed</span>
+        </div>
+
+        <!-- Video Frame and Profile Space -->
+        <div class="flex-grow flex items-center justify-center my-6 relative overflow-hidden rounded-3xl bg-zinc-950 border border-dark-border">
+            
+            <!-- Real Remote Video Element -->
+            <video id="remote-video" class="w-full h-full object-cover hidden" autoplay playsinline></video>
+            
+            <!-- Default Avatar & Soundwave Placeholder -->
+            <div id="remote-placeholder" class="flex flex-col items-center gap-4 text-center z-10">
+                <div class="w-24 h-24 rounded-full bg-brand-600/20 text-brand-400 flex items-center justify-center text-4xl font-extrabold animate-pulse border border-brand-500/30" id="remote-placeholder-avatar">
+                    ?
+                </div>
+                <div>
+                    <h3 class="text-lg font-extrabold" id="remote-placeholder-name">Securing Link</h3>
+                    <p class="text-xs text-zinc-500 mt-1" id="remote-placeholder-status">Negotiating End-to-End Keys</p>
+                </div>
+                
+                <!-- Bouncing Live Wave Visualizer -->
+                <div class="flex items-center gap-1.5 h-8 mt-2" id="voice-waves">
+                    <span class="w-1 bg-brand-500 rounded-full h-2 transition-all duration-150"></span>
+                    <span class="w-1 bg-brand-500 rounded-full h-4 transition-all duration-150"></span>
+                    <span class="w-1 bg-brand-500 rounded-full h-6 transition-all duration-150"></span>
+                    <span class="w-1 bg-brand-500 rounded-full h-3 transition-all duration-150"></span>
+                    <span class="w-1 bg-brand-500 rounded-full h-1 transition-all duration-150"></span>
+                </div>
+            </div>
+
+            <!-- Floating Draggable Local Video Feed -->
+            <div id="local-video-container" class="absolute bottom-4 right-4 w-32 h-44 rounded-2xl bg-zinc-900 border border-white/10 overflow-hidden shadow-2xl transition-all z-20">
+                <video id="local-video" class="w-full h-full object-cover" autoplay muted playsinline></video>
+                <div id="local-placeholder" class="hidden w-full h-full bg-zinc-800 flex items-center justify-center text-sm font-bold text-zinc-500">
+                    Camera Off
+                </div>
+            </div>
+        </div>
+
+        <!-- In-Call Device Control Deck -->
+        <div class="flex items-center justify-center gap-4 py-4">
+            <button onclick="toggleCallMute()" id="call-mute-btn" class="p-4 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-full transition-all text-xl" title="Mute Mic">
+                <i class="fa-solid fa-microphone" id="call-mute-icon"></i>
+            </button>
+            <button onclick="toggleCallCamera()" id="call-cam-btn" class="p-4 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-full transition-all text-xl" title="Disable Camera">
+                <i class="fa-solid fa-video" id="call-cam-icon"></i>
+            </button>
+            <button onclick="hangUpCall()" class="p-4 bg-rose-600 hover:bg-rose-500 text-white rounded-full transition-all text-xl shadow-lg shadow-rose-600/30" title="Disconnect Session">
+                <i class="fa-solid fa-phone-slash"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Live Incoming Call Banner Notifications -->
+    <div id="incoming-call-modal" class="hidden fixed top-6 left-1/2 -translate-x-1/2 z-[16000] w-full max-w-sm p-4 glass rounded-3xl shadow-2xl border border-brand-500/50 flex items-center justify-between animate-slide-up text-white">
+        <div class="flex items-center gap-3 min-w-0">
+            <div class="w-11 h-11 bg-brand-500/10 text-brand-400 rounded-2xl flex items-center justify-center font-bold text-base flex-shrink-0 animate-bounce" id="incoming-avatar">
+                ?
+            </div>
+            <div class="min-w-0 flex-1">
+                <h4 class="font-extrabold text-sm text-white truncate" id="incoming-caller-name">User...</h4>
+                <p class="text-[10px] text-zinc-400 font-bold flex items-center gap-1">
+                    <i class="fa-solid fa-video text-brand-500 animate-pulse"></i>
+                    Incoming calling session...
+                </p>
+            </div>
+        </div>
+        <div class="flex items-center gap-2">
+            <button onclick="declineCall()" class="w-9 h-9 bg-rose-600 hover:bg-rose-500 text-white rounded-xl flex items-center justify-center transition-all shadow-md shadow-rose-600/20" title="Decline">
+                <i class="fa-solid fa-phone-slash text-xs"></i>
+            </button>
+            <button onclick="acceptCall()" class="w-9 h-9 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl flex items-center justify-center transition-all shadow-md shadow-emerald-600/20" title="Accept Secure Call">
+                <i class="fa-solid fa-phone text-xs"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Modal for picking Vault Asset to Share in Chat -->
     <div id="vault-share-modal" class="hidden fixed inset-0 z-[12000] flex items-center justify-center bg-dark-bg/60 backdrop-blur-sm animate-fade-in">
         <div class="glass max-w-md w-full rounded-3xl p-6 border border-white/5 max-h-[70vh] flex flex-col">
             <h3 class="text-base font-extrabold text-white mb-4 flex items-center gap-2"><i class="fa-solid fa-file-shield text-brand-500"></i> Share Vault Asset</h3>
             <div id="vault-share-list" class="flex-grow overflow-y-auto space-y-2 pr-1 scrollbar-thin">
-                </div>
+                <!-- Loaded dynamically -->
+            </div>
             <div class="flex justify-end gap-3 mt-4 pt-4 border-t border-dark-border">
                 <button onclick="closeShareVaultAssetModal()" class="px-4 py-2 text-xs font-bold text-zinc-400 hover:bg-zinc-800 rounded-xl">Cancel</button>
             </div>
         </div>
     </div>
 
+    <!-- Right Click Custom Context Menu -->
     <div id="context-menu" class="glass hidden rounded-2xl shadow-2xl p-2 border border-dark-border min-w-[200px] animate-fade-in">
         <button id="ctx-preview" class="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-left text-sm font-semibold hover:bg-brand-500 hover:text-white transition-all text-zinc-300">
             <i class="fa-solid fa-expand text-xs"></i> Open Preview
@@ -466,6 +608,7 @@
         </button>
     </div>
 
+    <!-- WhatsApp Style Media Preview Lightbox Modal -->
     <div id="lightbox-modal" class="hidden fixed inset-0 z-[11000] flex flex-col bg-zinc-950/95 backdrop-blur-md animate-fade-in">
         <header class="h-16 px-6 flex items-center justify-between border-b border-zinc-900 flex-shrink-0 text-white">
             <div class="flex items-center gap-3 min-w-0">
@@ -484,6 +627,7 @@
         <div class="flex-grow flex items-center justify-center p-4 md:p-8 overflow-hidden relative" id="lightbox-content-wrapper"></div>
     </div>
 
+    <!-- Full-Screen Settings Overlay -->
     <div id="settings-overlay" class="hidden fixed inset-0 z-50 bg-[#0c0c0e]/90 backdrop-blur-lg flex items-center justify-center p-4 md:p-8 animate-fade-in" onclick="if(event.target === this) toggleSettings()">
         <div class="glass w-full max-w-5xl h-full max-h-[85vh] rounded-3xl overflow-hidden flex flex-col border border-white/5 shadow-2xl relative">
             <header class="p-6 border-b border-dark-border flex justify-between items-center flex-shrink-0">
@@ -533,6 +677,7 @@
         </div>
     </div>
 
+    <!-- PIN Authentication Panel -->
     <div id="pin-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-dark-bg/85 backdrop-blur-md animate-fade-in">
         <div class="glass max-w-sm w-full rounded-3xl p-8 shadow-2xl text-center border border-white/10">
             <div class="w-16 h-16 bg-red-900/30 rounded-2xl flex items-center justify-center text-red-400 mx-auto mb-4">
@@ -553,6 +698,7 @@
         </div>
     </div>
 
+    <!-- Rename Item Modal -->
     <div id="rename-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-dark-bg/60 backdrop-blur-sm animate-fade-in">
         <div class="glass max-w-sm w-full rounded-2xl p-6 border border-white/5">
             <h3 class="text-base font-extrabold text-white mb-2">Rename Asset</h3>
@@ -564,6 +710,7 @@
         </div>
     </div>
 
+    <!-- Properties/Details Modal -->
     <div id="properties-modal" class="hidden fixed inset-0 z-[12000] flex items-center justify-center bg-dark-bg/60 backdrop-blur-sm animate-fade-in">
         <div class="glass max-w-md w-full rounded-3xl p-6 border border-white/5">
             <h3 class="text-lg font-extrabold text-white mb-4 flex items-center gap-2"><i class="fa-solid fa-circle-info text-brand-500"></i> Asset Properties</h3>
@@ -580,6 +727,7 @@
         </div>
     </div>
 
+    <!-- Legal Documents & Contact Info Modal -->
     <div id="legal-modal" class="hidden fixed inset-0 z-[12000] flex items-center justify-center bg-dark-bg/60 backdrop-blur-sm animate-fade-in" onclick="if(event.target === this) closeLegalModal()">
         <div class="glass max-w-lg w-full rounded-3xl p-6 border border-white/5 flex flex-col max-h-[80vh] overflow-hidden">
             <h3 id="legal-title" class="text-base font-extrabold text-white mb-4 flex items-center gap-2"></h3>
@@ -590,6 +738,7 @@
         </div>
     </div>
 
+    <!-- Create Folder Modal -->
     <div id="create-folder-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-dark-bg/60 backdrop-blur-sm animate-fade-in">
         <div class="glass max-w-sm w-full rounded-2xl p-6 border border-white/5">
             <h3 class="text-base font-extrabold text-white mb-2">Create Custom Folder</h3>
@@ -601,6 +750,7 @@
         </div>
     </div>
 
+    <!-- Toast Notifications container -->
     <div id="toast-container" class="fixed bottom-6 right-6 z-[13000] flex flex-col gap-2.5 max-w-sm w-full pointer-events-none"></div>
 
     <script>
@@ -640,6 +790,28 @@
         let unsubscribeChatListener = null;
         
         let chatBlobCacheMap = {};
+
+        // Call State Variables
+        let activeCallListener = null;
+        let peerConnection = null;
+        let localStream = null;
+        let remoteStream = null;
+        let currentCallData = null;
+        let isAudioMuted = false;
+        let isVideoMuted = false;
+        let isSimulatedCall = false;
+        let simulatedWaveInterval = null;
+        let ringerSynthCtx = null;
+        let ringerIntervalId = null;
+        let globalCallListeners = {};
+
+        const rtcConfig = {
+            iceServers: [
+                { urls: 'stun:stun.l.google.com:19302' },
+                { urls: 'stun:stun1.l.google.com:19302' },
+                { urls: 'stun:stun2.l.google.com:19302' }
+            ]
+        };
 
         const PREDEFINED_FOLDERS = [
             { name: 'Images', icon: 'fa-image', color: 'text-accent-blue', iconBg: 'bg-blue-500/10' },
@@ -790,6 +962,7 @@
                 await fetchAllFilesRecursive();
                 navigateTo('root');
                 loadChatFriendsList();
+                startGlobalCallListening(); // Global incoming call signaling listener registered
             } catch (error) {
                 console.error(error);
                 showToast(`Initialization Failed: ${error.message}`, 'error');
@@ -1312,6 +1485,7 @@
                 list.push(friendEmail);
                 localStorage.setItem('mv_chat_friends', JSON.stringify(list));
                 loadChatFriendsList();
+                startGlobalCallListening(); // Update dynamic call listener list
             }
 
             if (unsubscribeChatListener) unsubscribeChatListener();
@@ -1326,6 +1500,10 @@
                     console.error("Firestore loading error:", err);
                     showToast("Configure Firestore rules to test.", "error");
                 });
+
+            // SHOW CHAT CALL HEADER CONTROL PANEL ON CHAT LAUNCH
+            document.getElementById('chat-header-actions').style.display = 'flex';
+            initCallingSignalingListener();
         }
 
         function loadChatFriendsList() {
@@ -1362,6 +1540,7 @@
                 activeChatId = null;
                 if (unsubscribeChatListener) unsubscribeChatListener();
                 document.getElementById('chat-header-name').innerText = "Select a Conversation";
+                document.getElementById('chat-header-actions').style.display = 'none';
                 document.getElementById('chat-messages-scroll').innerHTML = `
                     <div class="m-auto text-center space-y-3 max-w-sm">
                         <div class="w-16 h-16 bg-brand-900/30 text-brand-400 rounded-full flex items-center justify-center mx-auto mb-2"><i class="fa-solid fa-message text-2xl"></i></div>
@@ -1369,6 +1548,7 @@
                     </div>`;
             }
             loadChatFriendsList();
+            startGlobalCallListening(); // Sync global call handlers
         }
 
         async function sendChatMessage(textOverride = null, type = 'text', mediaUrl = null, extraMeta = {}) {
@@ -1701,20 +1881,19 @@
                 }
             });
 
-            // Keep the overlay up while dragging inside the container bounds
+            // Keep the overlay up while dragging
             chatContainer.addEventListener('dragover', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
             });
 
-            // Hide overlay gracefully when dropping or completely exiting viewport bounds
+            // Hide overlay when leaving viewport
             chatContainer.addEventListener('dragleave', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                
-                const rect = chatContainer.getBoundingClientRect();
-                // Safe check if crosshair pointer actually left container geometry
-                if (e.clientX <= rect.left || e.clientX >= rect.right || e.clientY <= rect.top || e.clientY >= rect.bottom) {
+                const r = chatContainer.getBoundingClientRect();
+                // Check if the pointer actually left the container boundary
+                if (e.clientX <= r.left || e.clientX >= r.right || e.clientY <= r.top || e.clientY >= r.bottom) {
                     dropzoneOverlay.style.display = 'none';
                 }
             });
@@ -2093,7 +2272,7 @@
         }
 
         function updateSetting(id) {
-            const toggle = document.getElementById('setting-' + id);
+            const toggle = document.getElementById(`setting-${id}`);
             const state = toggle ? toggle.checked : false;
             localStorage.setItem(`mv_setting_${id}`, state.toString());
             applySettingActions(id, state);
@@ -2271,8 +2450,476 @@
                 setTimeout(() => toast.remove(), 400);
             }, 3000);
         }
+
+        // --- PREMIUM VOICE & VIDEO CALLING ENGINE FUNCTIONS ---
+
+        // Local frequency audio synthesis for telephones (eliminates CORS and network audio errors completely!)
+        function startRingtoneSynthesizer(isIncoming = false) {
+            stopRingtoneSynthesizer();
+            try {
+                ringerSynthCtx = new (window.AudioContext || window.webkitAudioContext)();
+                if (isIncoming) {
+                    // Smooth pulsing sound for incoming calls
+                    ringerIntervalId = setInterval(() => {
+                        if (!ringerSynthCtx) return;
+                        const o1 = ringerSynthCtx.createOscillator();
+                        const o2 = ringerSynthCtx.createOscillator();
+                        const gain = ringerSynthCtx.createGain();
+                        
+                        o1.frequency.value = 523.25; // C5
+                        o2.frequency.value = 659.25; // E5
+                        
+                        gain.gain.setValueAtTime(0, ringerSynthCtx.currentTime);
+                        gain.gain.linearRampToValueAtTime(0.15, ringerSynthCtx.currentTime + 0.1);
+                        gain.gain.linearRampToValueAtTime(0.1, ringerSynthCtx.currentTime + 0.8);
+                        gain.gain.linearRampToValueAtTime(0, ringerSynthCtx.currentTime + 0.9);
+                        
+                        o1.connect(gain);
+                        o2.connect(gain);
+                        gain.connect(ringerSynthCtx.destination);
+                        
+                        o1.start(); o2.start();
+                        o1.stop(ringerSynthCtx.currentTime + 0.9);
+                        o2.stop(ringerSynthCtx.currentTime + 0.9);
+                    }, 1800);
+                } else {
+                    // Elegant pitch sequence for outgoing ringing tone
+                    ringerIntervalId = setInterval(() => {
+                        if (!ringerSynthCtx) return;
+                        const o = ringerSynthCtx.createOscillator();
+                        const gain = ringerSynthCtx.createGain();
+                        o.frequency.setValueAtTime(440, ringerSynthCtx.currentTime);
+                        o.frequency.setValueAtTime(480, ringerSynthCtx.currentTime + 0.1);
+                        
+                        gain.gain.setValueAtTime(0, ringerSynthCtx.currentTime);
+                        gain.gain.linearRampToValueAtTime(0.12, ringerSynthCtx.currentTime + 0.05);
+                        gain.gain.linearRampToValueAtTime(0.12, ringerSynthCtx.currentTime + 1.2);
+                        gain.gain.linearRampToValueAtTime(0, ringerSynthCtx.currentTime + 1.25);
+                        
+                        o.connect(gain);
+                        gain.connect(ringerSynthCtx.destination);
+                        o.start();
+                        o.stop(ringerSynthCtx.currentTime + 1.3);
+                    }, 3000);
+                }
+            } catch (err) {
+                console.warn("Web Audio Context synthesis restricted by browser sandbox.", err);
+            }
+        }
+
+        function stopRingtoneSynthesizer() {
+            if (ringerIntervalId) {
+                clearInterval(ringerIntervalId);
+                ringerIntervalId = null;
+            }
+            if (ringerSynthCtx) {
+                try { ringerSynthCtx.close(); } catch(e){}
+                ringerSynthCtx = null;
+            }
+        }
+
+        // Bouncing dynamic soundwave visualization
+        function startSimulatedSoundwave() {
+            clearInterval(simulatedWaveInterval);
+            simulatedWaveInterval = setInterval(() => {
+                const waveBars = document.querySelectorAll('#voice-waves span');
+                waveBars.forEach(bar => {
+                    const h = Math.floor(Math.random() * 26) + 4;
+                    bar.style.height = `${h}px`;
+                });
+            }, 100);
+        }
+
+        function stopSimulatedSoundwave() {
+            clearInterval(simulatedWaveInterval);
+            const waveBars = document.querySelectorAll('#voice-waves span');
+            waveBars.forEach(bar => bar.style.height = '4px');
+        }
+
+        // Setup persistent global listeners for incoming calls across all added chats
+        function startGlobalCallListening() {
+            // Clean up previous global subscriptions
+            Object.keys(globalCallListeners).forEach(key => {
+                if (globalCallListeners[key]) globalCallListeners[key]();
+            });
+            globalCallListeners = {};
+
+            const list = JSON.parse(localStorage.getItem('mv_chat_friends') || '[]');
+            list.forEach(friendEmail => {
+                const chatId = getChatId(userProfile.email.toLowerCase(), friendEmail);
+                globalCallListeners[chatId] = db.collection('chats').doc(chatId).collection('callState').doc('current')
+                    .onSnapshot(doc => {
+                        if (doc.exists) {
+                            const data = doc.data();
+                            handleGlobalCallStateUpdate(chatId, data);
+                        }
+                    }, err => {
+                        console.warn("Firestore Call Hook Issue:", err);
+                    });
+            });
+        }
+
+        // Handle structural updates on calling statuses from the database
+        function handleGlobalCallStateUpdate(chatId, data) {
+            if (data.status === 'ringing') {
+                if (data.receiver === userProfile.email.toLowerCase()) {
+                    // Trigger incoming call banner
+                    currentCallData = { ...data, chatId };
+                    document.getElementById('incoming-caller-name').innerText = data.caller;
+                    document.getElementById('incoming-avatar').innerText = data.caller.charAt(0).toUpperCase();
+                    document.getElementById('incoming-call-modal').classList.remove('hidden');
+                    startRingtoneSynthesizer(true);
+                }
+            } else if (data.status === 'ended' || data.status === 'idle') {
+                if (currentCallData && currentCallData.chatId === chatId) {
+                    cleanupCallSessionLocal();
+                }
+            }
+        }
+
+        // Listen for specific calling states once active chat workspace is active
+        function initCallingSignalingListener() {
+            if (!activeChatId) return;
+            if (activeCallListener) activeCallListener();
+
+            activeCallListener = db.collection('chats').doc(activeChatId).collection('callState').doc('current')
+                .onSnapshot(doc => {
+                    if (doc.exists) {
+                        const data = doc.data();
+                        onDirectCallStateUpdate(data);
+                    }
+                }, err => {
+                    console.warn("Direct workspace call sync failure:", err);
+                });
+        }
+
+        // Processes updates in the current workspace call document
+        async function onDirectCallStateUpdate(data) {
+            if (data.status === 'connected') {
+                stopRingtoneSynthesizer();
+                document.getElementById('call-status-label').innerText = "Encrypted Connection Established.";
+                document.getElementById('remote-placeholder-status').innerText = "Direct media pipeline secured.";
+                startSimulatedSoundwave();
+
+                if (data.mode === 'real' && !isSimulatedCall) {
+                    if (data.caller === userProfile.email.toLowerCase()) {
+                        // Caller handles answer SDP handshake
+                        if (data.answer && peerConnection && peerConnection.signalingState !== "stable") {
+                            const answerDesc = new RTCSessionDescription(JSON.parse(data.answer));
+                            await peerConnection.setRemoteDescription(answerDesc);
+                        }
+                    }
+                    // Setup remote ICE handshake listener
+                    syncRemoteIceCandidates(data);
+                } else if (data.mode === 'simulated' || isSimulatedCall) {
+                    // Visual simulation visualizer activated
+                    document.getElementById('remote-placeholder').classList.remove('hidden');
+                    document.getElementById('remote-placeholder-name').innerText = data.caller === userProfile.email.toLowerCase() ? data.receiver : data.caller;
+                }
+            } else if (data.status === 'ended') {
+                cleanupCallSessionLocal();
+            }
+        }
+
+        // Dynamically applies remote ICE elements
+        function syncRemoteIceCandidates(data) {
+            if (!peerConnection) return;
+            const targetCandidates = data.caller === userProfile.email.toLowerCase() ? data.receiverCandidates : data.callerCandidates;
+            if (targetCandidates && Array.isArray(targetCandidates)) {
+                targetCandidates.forEach(candStr => {
+                    try {
+                        const cand = new RTCIceCandidate(JSON.parse(candStr));
+                        peerConnection.addIceCandidate(cand).catch(e => {});
+                    } catch(e){}
+                });
+            }
+        }
+
+        // Get hardware stream safely with graceful simulated fallback
+        async function getLocalMediaStream(type) {
+            const constraints = {
+                audio: true,
+                video: type === 'video' ? { width: 320, height: 240, facingMode: "user" } : false
+            };
+            try {
+                localStream = await navigator.mediaDevices.getUserMedia(constraints);
+                const localVideo = document.getElementById('local-video');
+                if (localVideo) {
+                    localVideo.srcObject = localStream;
+                    localVideo.muted = true;
+                    localVideo.style.display = 'block';
+                    document.getElementById('local-placeholder').style.display = 'none';
+                    localVideo.play().catch(e => {});
+                }
+                isSimulatedCall = false;
+                return true;
+            } catch (err) {
+                console.warn("Hardware camera/mic locked or unavailable. Running simulated calling module instead.", err);
+                isSimulatedCall = true;
+                const localVideo = document.getElementById('local-video');
+                if (localVideo) localVideo.style.display = 'none';
+                document.getElementById('local-placeholder').innerText = "Simulated";
+                document.getElementById('local-placeholder').style.display = 'flex';
+                return false;
+            }
+        }
+
+        // Initiate outgoing voice or video call
+        async function initiateCall(type) {
+            if (!activeChatId || !activeChatFriendEmail) {
+                showToast("Select a conversation room first.", "error");
+                return;
+            }
+            showToast("Securing WebRTC port...", "info");
+            startRingtoneSynthesizer(false);
+
+            // Initialize local viewport controls
+            isAudioMuted = false;
+            isVideoMuted = false;
+            document.getElementById('call-mute-icon').className = 'fa-solid fa-microphone';
+            document.getElementById('call-cam-icon').className = 'fa-solid fa-video';
+
+            // Fetch local stream
+            const hardwareSuccess = await getLocalMediaStream(type);
+            const callMode = hardwareSuccess ? 'real' : 'simulated';
+
+            // Show UI Overlay
+            document.getElementById('call-partner-name').innerText = activeChatFriendEmail;
+            document.getElementById('call-partner-avatar').innerText = activeChatFriendEmail.charAt(0).toUpperCase();
+            document.getElementById('remote-placeholder-name').innerText = activeChatFriendEmail;
+            document.getElementById('remote-placeholder-avatar').innerText = activeChatFriendEmail.charAt(0).toUpperCase();
+            document.getElementById('remote-placeholder-status').innerText = "Ringing... Waiting for answer.";
+            document.getElementById('call-type-badge').innerText = `${type} Call`;
+            document.getElementById('call-status-label').innerText = "Ringing...";
+            document.getElementById('call-overlay').classList.remove('hidden');
+
+            if (type === 'audio') {
+                document.getElementById('local-video-container').classList.add('hidden');
+            } else {
+                document.getElementById('local-video-container').classList.remove('hidden');
+            }
+
+            // Write structural call proposal into database
+            const callDoc = db.collection('chats').doc(activeChatId).collection('callState').doc('current');
+            await callDoc.set({
+                caller: userProfile.email.toLowerCase(),
+                receiver: activeChatFriendEmail,
+                status: 'ringing',
+                type: type,
+                mode: callMode,
+                timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                callerCandidates: [],
+                receiverCandidates: []
+            });
+
+            if (!isSimulatedCall) {
+                // Initialize WebRTC Offer Configuration
+                await setupRTCPeerConnection(type, true);
+            } else {
+                startSimulatedSoundwave();
+            }
+        }
+
+        // Accept incoming call
+        async function acceptCall() {
+            if (!currentCallData) return;
+            stopRingtoneSynthesizer();
+            document.getElementById('incoming-call-modal').classList.add('hidden');
+
+            // Initialize controls
+            isAudioMuted = false;
+            isVideoMuted = false;
+            document.getElementById('call-mute-icon').className = 'fa-solid fa-microphone';
+            document.getElementById('call-cam-icon').className = 'fa-solid fa-video';
+
+            // Auto-navigate to conversation if callee was in other panel
+            if (activeChatId !== currentCallData.chatId) {
+                activateChatRoom(currentCallData.caller);
+            }
+
+            const hardwareSuccess = await getLocalMediaStream(currentCallData.type);
+            isSimulatedCall = currentCallData.mode === 'simulated' || !hardwareSuccess;
+
+            // Display calling viewport
+            document.getElementById('call-partner-name').innerText = currentCallData.caller;
+            document.getElementById('call-partner-avatar').innerText = currentCallData.caller.charAt(0).toUpperCase();
+            document.getElementById('remote-placeholder-name').innerText = currentCallData.caller;
+            document.getElementById('remote-placeholder-avatar').innerText = currentCallData.caller.charAt(0).toUpperCase();
+            document.getElementById('remote-placeholder-status').innerText = "Securing Peer Pipe...";
+            document.getElementById('call-type-badge').innerText = `${currentCallData.type} Call`;
+            document.getElementById('call-status-label').innerText = "Securing feed...";
+            document.getElementById('call-overlay').classList.remove('hidden');
+
+            if (currentCallData.type === 'audio') {
+                document.getElementById('local-video-container').classList.add('hidden');
+            } else {
+                document.getElementById('local-video-container').classList.remove('hidden');
+            }
+
+            // Push connection state to database
+            const callDoc = db.collection('chats').doc(activeChatId).collection('callState').doc('current');
+            await callDoc.update({
+                status: 'connected',
+                mode: isSimulatedCall ? 'simulated' : 'real',
+                acceptTimestamp: firebase.firestore.FieldValue.serverTimestamp()
+            });
+
+            if (!isSimulatedCall) {
+                // Create RTCPeerConnection as callee
+                await setupRTCPeerConnection(currentCallData.type, false);
+            } else {
+                startSimulatedSoundwave();
+            }
+        }
+
+        // Decline incoming call invitation
+        async function declineCall() {
+            if (!currentCallData) return;
+            stopRingtoneSynthesizer();
+            document.getElementById('incoming-call-modal').classList.add('hidden');
+
+            const callDoc = db.collection('chats').doc(currentCallData.chatId).collection('callState').doc('current');
+            await callDoc.set({
+                status: 'ended',
+                reason: 'declined',
+                endedBy: userProfile.email.toLowerCase(),
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            currentCallData = null;
+        }
+
+        // Disconnect or Terminate live calling session
+        async function hangUpCall() {
+            cleanupCallSessionLocal();
+            if (activeChatId) {
+                const callDoc = db.collection('chats').doc(activeChatId).collection('callState').doc('current');
+                await callDoc.set({
+                    status: 'ended',
+                    reason: 'hung_up',
+                    endedBy: userProfile.email.toLowerCase(),
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                });
+            }
+        }
+
+        // Localized structural variables teardown
+        function cleanupCallSessionLocal() {
+            stopRingtoneSynthesizer();
+            stopSimulatedSoundwave();
+
+            // Hardware tracks release
+            if (localStream) {
+                localStream.getTracks().forEach(track => track.stop());
+                localStream = null;
+            }
+            if (remoteStream) {
+                remoteStream.getTracks().forEach(track => track.stop());
+                remoteStream = null;
+            }
+
+            // Teardown WebRTC peer connections
+            if (peerConnection) {
+                peerConnection.close();
+                peerConnection = null;
+            }
+
+            // Viewport states reset
+            document.getElementById('call-overlay').classList.add('hidden');
+            document.getElementById('incoming-call-modal').classList.add('hidden');
+            document.getElementById('remote-video').classList.add('hidden');
+            document.getElementById('remote-placeholder').classList.remove('hidden');
+            document.getElementById('local-video-container').classList.add('hidden');
+
+            const localVideo = document.getElementById('local-video');
+            if (localVideo) localVideo.srcObject = null;
+            const remoteVideo = document.getElementById('remote-video');
+            if (remoteVideo) remoteVideo.srcObject = null;
+
+            currentCallData = null;
+            showToast("Calling session disconnected.", "info");
+        }
+
+        // RTCPeerConnection core structure setup
+        async function setupRTCPeerConnection(type, isCaller) {
+            peerConnection = new RTCPeerConnection(rtcConfig);
+
+            // Append local track elements to WebRTC pipeline
+            if (localStream) {
+                localStream.getTracks().forEach(track => {
+                    peerConnection.addTrack(track, localStream);
+                });
+            }
+
+            // Stream pipelines hook
+            peerConnection.ontrack = (event) => {
+                remoteStream = event.streams[0];
+                const remoteVid = document.getElementById('remote-video');
+                if (remoteVid) {
+                    remoteVid.srcObject = remoteStream;
+                    remoteVid.classList.remove('hidden');
+                    document.getElementById('remote-placeholder').classList.add('hidden');
+                    remoteVid.play().catch(e => {});
+                }
+            };
+
+            // Ice candidate propagation pipeline
+            peerConnection.onicecandidate = async (event) => {
+                if (event.candidate && activeChatId) {
+                    const fieldName = isCaller ? 'callerCandidates' : 'receiverCandidates';
+                    const callDoc = db.collection('chats').doc(activeChatId).collection('callState').doc('current');
+                    await callDoc.update({
+                        [fieldName]: firebase.firestore.FieldValue.arrayUnion(JSON.stringify(event.candidate.toJSON()))
+                    });
+                }
+            };
+
+            const callDoc = db.collection('chats').doc(activeChatId).collection('callState').doc('current');
+
+            if (isCaller) {
+                // Generate and publish Offer
+                const offer = await peerConnection.createOffer();
+                await peerConnection.setLocalDescription(offer);
+                await callDoc.update({
+                    offer: JSON.stringify(offer)
+                });
+            } else {
+                // Await offer, then publish Answer SDP
+                const snap = await callDoc.get();
+                const offerObj = JSON.parse(snap.data().offer);
+                await peerConnection.setRemoteDescription(new RTCSessionDescription(offerObj));
+                
+                const answer = await peerConnection.createAnswer();
+                await peerConnection.setLocalDescription(answer);
+                await callDoc.update({
+                    answer: JSON.stringify(answer)
+                });
+            }
+        }
+
+        // Toggles microphone track active state
+        function toggleCallMute() {
+            if (localStream && localStream.getAudioTracks().length > 0) {
+                isAudioMuted = !isAudioMuted;
+                localStream.getAudioTracks().forEach(track => track.enabled = !isAudioMuted);
+                const icon = document.getElementById('call-mute-icon');
+                icon.className = isAudioMuted ? 'fa-solid fa-microphone-slash text-rose-500 animate-pulse' : 'fa-solid fa-microphone';
+                showToast(isAudioMuted ? "Microphone muted" : "Microphone active", "info");
+            }
+        }
+
+        // Toggles camera track active state
+        function toggleCallCamera() {
+            if (localStream && localStream.getVideoTracks().length > 0) {
+                isVideoMuted = !isVideoMuted;
+                localStream.getVideoTracks().forEach(track => track.enabled = !isVideoMuted);
+                const icon = document.getElementById('call-cam-icon');
+                icon.className = isVideoMuted ? 'fa-solid fa-video-slash text-rose-500 animate-pulse' : 'fa-solid fa-video';
+                
+                document.getElementById('local-video').style.display = isVideoMuted ? 'none' : 'block';
+                document.getElementById('local-placeholder').style.display = isVideoMuted ? 'flex' : 'none';
+                showToast(isVideoMuted ? "Camera stream paused" : "Camera stream active", "info");
+            }
+        }
     </script>
 </body>
 </html>
-
-```
